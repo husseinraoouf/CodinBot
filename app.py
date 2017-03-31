@@ -17,6 +17,10 @@ from flask_session import Session
 from tempfile import gettempdir
 from flask.ext.cache import Cache
 import psycopg2
+import urlparse
+from os.path import exists
+from os import makedirs
+
 
 try:
     import apiai
@@ -32,7 +36,13 @@ except ImportError:
     import apiai
 
 
-db = psycopg2.connect("dbname=d9da6vma4ujg4f user=yduxizxrktqgdd password=2a500c838a85582fff1eaadaf8bce0fc7aefd87dc48689f0f2c984f3929e15ac host=ec2-107-22-223-6.compute-1.amazonaws.com")
+url = urlparse.urlparse(os.environ.get('DATABASE_URL'))
+aa = "dbname=%s user=%s password=%s host=%s " % (url.path[1:], url.username, url.password, url.hostname)
+# schema = "schema.sql"
+db = psycopg2.connect(aa)
+
+
+# db = psycopg2.connect("dbname=d9da6vma4ujg4f user=yduxizxrktqgdd password=2a500c838a85582fff1eaadaf8bce0fc7aefd87dc48689f0f2c984f3929e15ac host=ec2-107-22-223-6.compute-1.amazonaws.com")
 
 cur = db.cursor()
 
@@ -172,7 +182,7 @@ def pages():
     userID = request.args['id']
 
     cur.execute(
-        "SELECT * FROM session WHERE question = %s AND senderID = %s", (xx, userID))
+        """SELECT * FROM session WHERE question = %s AND senderID = %s""", (xx, userID))
     if cur.rowcount > 0:
         re = cur.fetchone()
         # print (re[3])
@@ -181,7 +191,7 @@ def pages():
             return render_template("answer.html", title=xx, body=re[2])
 
     else:
-        cur.execute("SELECT * FROM answers WHERE question = %s ORDER BY stars DESC", [xx])
+        cur.execute("""SELECT * FROM answers WHERE question = %s ORDER BY stars DESC""", [xx])
         re = cur.fetchall()
         for one in re:
             checkbl = checkblacklist(one[3])
@@ -230,7 +240,7 @@ def handle_incoming_messages():
                             if xx <= 5 and xx >= 0:
                                 deleteSession()
                                 cur.execute(
-                                    "SELECT * FROM answers WHERE source = %s", [session[3]])
+                                    """SELECT * FROM answers WHERE source = %s""", [session[3]])
 
                                 aa = 1
                                 stars = xx
@@ -239,21 +249,21 @@ def handle_incoming_messages():
                                     aa = re[6] + 1
                                     stars = re[5] + stars*re[6]
                                     cur.execute(
-                                        "UPDATE answers SET stars= %s , numRated = %s WHERE question = %s", (stars/aa, aa, session[1]))
+                                        """UPDATE answers SET stars= %s , numRated = %s WHERE question = %s""", (stars/aa, aa, session[1]))
 
                                 else:
-                                    cur.execute("INSERT INTO answers (question, answer,source, kind, stars, numRated) VALUES (%s, %s, %s,'asd', %s, %s)", (
+                                    cur.execute("""INSERT INTO answers (question, answer,source, kind, stars, numRated) VALUES (%s, %s, %s,'asd', %s, %s)""", (
                                         session[1], session[2], session[3], stars, aa))
 
                                 db.commit()
 
                                 if xx <= 2:
                                     cur.execute(
-                                        "SELECT * FROM blacklist WHERE link = %s", [session[3]])
+                                        """SELECT * FROM blacklist WHERE link = %s""", [session[3]])
                                     if cur.rowcount > 0 + 1 >= 20:
                                         cur.execute(
-                                            "INSERT INTO blacklist (userID, question,link) VALUES (%s, %s, %s)", (0, session[1], session[3]))
-                                    cur.execute("INSERT INTO blacklist (userID, question,link) VALUES (%s, %s, %s)", (
+                                            """INSERT INTO blacklist (userID, question,link) VALUES (%s, %s, %s)""", (0, session[1], session[3]))
+                                    cur.execute("""INSERT INTO blacklist (userID, question,link) VALUES (%s, %s, %s)""", (
                                         session[0], session[1], session[3]))
                                     db.commit()
 
@@ -283,7 +293,7 @@ def handle_incoming_messages():
     return "ok"
 
 def chekSession():
-    cur.execute("SELECT * FROM session WHERE senderID = %s", [userID])
+    cur.execute("""SELECT * FROM session WHERE senderID = %s""", [userID])
     if cur.rowcount > 0:
         return True
     else:
@@ -300,20 +310,20 @@ def askForRate():
 
 
 def deleteSession():
-    cur.execute("DELETE FROM session WHERE senderID = %s", [userID])
+    cur.execute("""DELETE FROM session WHERE senderID = %s""", [userID])
     db.commit()
 
 
 def loadSession():
     global session
-    cur.execute("SELECT * FROM session WHERE senderID = %s", [userID])
+    cur.execute("""SELECT * FROM session WHERE senderID = %s""", [userID])
     if cur.rowcount > 0:
         session = cur.fetchone()
         # reply("sessionss" + str(session[1]))
 
 
 def out(answer, source, quetion):
-    cur.execute("INSERT INTO session (senderID, question,answer, source) VALUES (%s, %s, %s, %s)",
+    cur.execute("""INSERT INTO session (senderID, question,answer, source) VALUES (%s, %s, %s, %s)""",
                 (userID, quetion, answer, source))
     db.commit()
     word = {'xx': quetion, 'id': userID}
@@ -367,7 +377,7 @@ def scrapstackoverflow(url):
 
 def checkblacklist(url):
     cur.execute(
-        "SELECT * FROM blacklist WHERE link = %s AND (userID = %s OR userID = '0')", (url, userID))
+        """SELECT * FROM blacklist WHERE link = %s AND (userID = %s OR userID = '0')""", (url, userID))
     if cur.rowcount == 0:
         return True
     return False
@@ -396,7 +406,7 @@ def scrapddgresult(xx):
 
 def search(xx):
     global tree
-    cur.execute("SELECT * FROM answers WHERE question = %s ORDER BY stars DESC", [xx] )
+    cur.execute("""SELECT * FROM answers WHERE question = %s ORDER BY stars DESC""", [xx] )
     re = cur.fetchall()
 
     if cur.rowcount > 0:
