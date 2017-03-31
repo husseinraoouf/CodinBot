@@ -6,8 +6,3 @@ MarkupSafe==0.23
 requests==2.9.1
 Werkzeug==0.11.5
 wheel==0.24.0
-urllib2
-urllib
-Flask-Session
-Flask-Cache
-psycopg2
