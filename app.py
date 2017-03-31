@@ -11,7 +11,7 @@ from lxml import etree, html
 import time
 import urllib2
 import urllib
-import MySQLdb
+# import MySQLdb
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from tempfile import gettempdir
