@@ -10,3 +10,4 @@ lxml
 Flask-Session
 Flask-Cache
 psycopg2
+apiai
