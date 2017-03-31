@@ -32,7 +32,7 @@ except ImportError:
     import apiai
 
 
-db = psycopg2.connect("dbname=d9da6vma4ujg4f user=yduxizxrktqgdd")
+db = psycopg2.connect("dbname=d9da6vma4ujg4f user=yduxizxrktqgdd password=2a500c838a85582fff1eaadaf8bce0fc7aefd87dc48689f0f2c984f3929e15ac host=ec2-107-22-223-6.compute-1.amazonaws.com")
 
 cur = db.cursor()
 
