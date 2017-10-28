@@ -132,7 +132,13 @@ function handleMessage(sender_psid, received_message) {
                         "type": "postback",
                         "title": "No!",
                         "payload": "no",
-                    }
+                    },
+                    {
+                        "type":"web_url",
+                        "url":"https://google.com",
+                        "title":"Select Criteria",
+                        "webview_height_ratio": "compact",
+                      }
                     ],
                 }]
                 }
