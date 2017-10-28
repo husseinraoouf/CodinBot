@@ -4,6 +4,7 @@
 const 
   express = require('express'),
   bodyParser = require('body-parser'),
+  request = require('request'),
   app = express().use(bodyParser.json()), // creates express http server
   ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC";
   
@@ -42,6 +43,7 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', (req, res) => {  
 
     let body = req.body;
+    console.log(body);
 
     // Checks this is an event from a page subscription
     if (body.object === 'page') {
@@ -53,6 +55,12 @@ app.post('/webhook', (req, res) => {
             // will only ever contain one message, so we get index 0
             let webhookEvent = entry.messaging[0];
             console.log(webhookEvent);
+
+            var sender = entry.sender.id;
+            if(entry.message && entry.message.text) {
+                var msg_text = entry.message.text;
+                sendMessage(sender, msg_text, true);
+            }
         });
 
         // Returns a '200 OK' response to all requests
@@ -64,6 +72,32 @@ app.post('/webhook', (req, res) => {
 
 });
 
+
+function sendMessage(receiver, data, isText){
+	var payload = {};
+	payload = data;
+	
+	if(isText) {
+		payload = {
+			text: data
+		}
+	}
+
+	request({
+    url: conf.FB_MESSAGE_URL,
+    method: 'POST',
+    qs: {
+    	access_token: conf.PROFILE_TOKEN
+    },
+    json: {
+      recipient: {id: receiver},
+      message: payload
+    }
+  }, function (error, response) {
+  	if(error) console.log('Error sending message: ', error);
+  	if(response.body.error) console.log('Error: ', response.body.error);
+  });
+}
 
 const PORT = process.argv[2] || 5000;
 app.listen(PORT, () => {
