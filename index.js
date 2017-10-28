@@ -92,6 +92,12 @@ function handleMessage(sender_psid, received_message) {
             sessionId: sender_psid,
         });
 
+        apiaires.on('response', function(response) {
+            response = {
+                "text": response
+            }
+        });
+
         // Create the payload for a basic text message, which
         // will be added to the body of our request to the Send API
         response = {
