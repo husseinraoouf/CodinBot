@@ -5,11 +5,10 @@ const
   express = require('express'),
   bodyParser = require('body-parser'),
   request = require('request'),
-  app = express().use(bodyParser.json()), // creates express http server
+  apiai = require('apiai'),
+  app = express().use(bodyParser.json()),  // creates express http server
+  apiai = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
   PAGE_ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC";
-  
-
-
 
 // Adds support for GET requests to our webhook
 app.get('/webhook', (req, res) => {
@@ -87,11 +86,16 @@ function handleMessage(sender_psid, received_message) {
     let response;
 
     // Checks if the message contains text
-    if (received_message.text) {    
+    if (received_message.text) {
+        
+        var apiaires = app.textRequest(received_message.text, {
+            sessionId: sender_psid,
+        });
+
         // Create the payload for a basic text message, which
         // will be added to the body of our request to the Send API
         response = {
-        "text": `You sent the message: "${received_message.text}". Now send me an attachment!`
+            "text": apiaires
         }
     } else if (received_message.attachments) {
         // Get the URL of the message attachment
@@ -126,6 +130,7 @@ function handleMessage(sender_psid, received_message) {
     // Send the response message
     callSendAPI(sender_psid, response);    
 }
+
 
 function handlePostback(sender_psid, received_postback) {
     
