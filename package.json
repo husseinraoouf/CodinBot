@@ -1,0 +1,13 @@
+{
+  "name": "CodingBot",
+  "version": "1.0.0",
+  "description": "Bot For Programmers",
+  "main": "index.js",
+  "repository": "https://github.com/husseinraoouf/CodingBot",
+  "author": "El-Hussein Abdelraouf <husseinraoouf@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2"
+  }
+}
