@@ -98,6 +98,9 @@ function handleMessage(sender_psid, received_message) {
             response = {
                 "text": response
             }
+            
+            // Send the response message
+            callSendAPI(sender_psid, response);
         });
 
         apiaires.on('error', function(error) {
@@ -135,10 +138,10 @@ function handleMessage(sender_psid, received_message) {
                 }
             }
         }
-    } 
 
-    // Send the response message
-    callSendAPI(sender_psid, response);    
+        // Send the response message
+        callSendAPI(sender_psid, response);
+    }    
 }
 
 
