@@ -7,7 +7,7 @@ const
   request = require('request'),
   apiai = require('apiai'),
   app = express().use(bodyParser.json()),  // creates express http server
-  apiai = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
+  apiaiClient = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
   PAGE_ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC";
 
 // Adds support for GET requests to our webhook
@@ -88,7 +88,7 @@ function handleMessage(sender_psid, received_message) {
     // Checks if the message contains text
     if (received_message.text) {
         
-        var apiaires = app.textRequest(received_message.text, {
+        var apiaires = apiaiClient.textRequest(received_message.text, {
             sessionId: sender_psid,
         });
 
