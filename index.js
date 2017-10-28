@@ -43,7 +43,7 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', (req, res) => {  
 
     let body = req.body;
-    console.log(body);
+    console.log(JSON.stringify(body) );
 
     // Checks this is an event from a page subscription
     if (body.object === 'page') {
@@ -54,7 +54,6 @@ app.post('/webhook', (req, res) => {
             // Gets the message. entry.messaging is an array, but 
             // will only ever contain one message, so we get index 0
             let webhookEvent = entry.messaging[0];
-            console.log(webhookEvent);
 
             var sender = entry.sender.id;
             if(entry.message && entry.message.text) {
