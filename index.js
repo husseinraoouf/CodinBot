@@ -88,6 +88,8 @@ function handleMessage(sender_psid, received_message) {
     // Checks if the message contains text
     if (received_message.text) {
         
+        // Create the payload for a basic text message, which
+        // will be added to the body of our request to the Send API
         var apiaires = apiaiClient.textRequest(received_message.text, {
             sessionId: sender_psid,
         });
@@ -98,11 +100,13 @@ function handleMessage(sender_psid, received_message) {
             }
         });
 
-        // Create the payload for a basic text message, which
-        // will be added to the body of our request to the Send API
-        response = {
-            "text": apiaires
-        }
+        apiaires.on('error', function(error) {
+            console.log(error);
+        });
+         
+        apiaires.end();
+
+        
     } else if (received_message.attachments) {
         // Get the URL of the message attachment
         let attachment_url = received_message.attachments[0].payload.url;
