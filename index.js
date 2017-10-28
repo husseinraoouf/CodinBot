@@ -96,7 +96,7 @@ function handleMessage(sender_psid, received_message) {
 
         apiaiRequest.on('response', function(response) {
             response = {
-                "text": response
+                "text": response.result.fulfillment.speech
             }
             
             // Send the response message
