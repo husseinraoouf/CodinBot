@@ -39,64 +39,41 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-// Creates the endpoint for our webhook 
+// Creates the endpoint for our webhook
 app.post('/webhook', (req, res) => {  
 
+    // Parse the request body from the POST
     let body = req.body;
     console.log(JSON.stringify(body) );
-
-    // Checks this is an event from a page subscription
+    
+    // Check the webhook event is from a Page subscription
     if (body.object === 'page') {
 
-        // // Iterates over each entry - there may be multiple if batched
-        // body.entry.forEach(function(entry) {
+        // Iterate over each entry - there may be multiple if batched
+        body.entry.forEach(function(entry) {
 
-        //     // Gets the message. entry.messaging is an array, but 
-        //     // will only ever contain one message, so we get index 0
-        //     let webhookEvent = entry.messaging[0];
+            // Get the webhook event. entry.messaging is an array, but 
+            // will only ever contain one event, so we get index 0
+            let webhook_event = entry.messaging[0];
+            console.log(webhook_event);
+            
 
-        //     var sender = entry.sender.id;
-        //     if(entry.message && entry.message.text) {
-        //         var msg_text = entry.message.text;
-        //         sendMessage(sender, msg_text, true);
-        //     }
-        // });
+            // Get the sender PSID
+            let sender_psid = webhook_event.sender.id;
+            console.log('Sender PSID: ' + sender_psid);
+        });
 
-        // Returns a '200 OK' response to all requests
+        // Return a '200 OK' response to all events
         res.status(200).send('EVENT_RECEIVED');
+
     } else {
-        // Returns a '404 Not Found' if event is not from a page subscription
+        // Return a '404 Not Found' if event is not from a page subscription
         res.sendStatus(404);
     }
 
 });
 
 
-function sendMessage(receiver, data, isText){
-	var payload = {};
-	payload = data;
-	
-	if(isText) {
-		payload = {
-			text: data
-		}
-	}
-
-	request({
-    url: conf.FB_MESSAGE_URL,
-    method: 'POST',
-    qs: {
-    	access_token: conf.PROFILE_TOKEN
-    },
-    json: {
-      recipient: {id: receiver},
-      message: payload
-    }
-  }, function (error, response) {
-  	if(error) console.log('Error sending message: ', error);
-  	if(response.body.error) console.log('Error: ', response.body.error);
-  });
-}
 
 const PORT = process.argv[2] || 5000;
 app.listen(PORT, () => {
