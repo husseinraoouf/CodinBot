@@ -90,11 +90,11 @@ function handleMessage(sender_psid, received_message) {
         
         // Create the payload for a basic text message, which
         // will be added to the body of our request to the Send API
-        var apiaires = apiaiClient.textRequest(received_message.text, {
+        var apiaiRequest = apiaiClient.textRequest(received_message.text, {
             sessionId: sender_psid,
         });
 
-        apiaires.on('response', function(response) {
+        apiaiRequest.on('response', function(response) {
             response = {
                 "text": response
             }
@@ -103,11 +103,11 @@ function handleMessage(sender_psid, received_message) {
             callSendAPI(sender_psid, response);
         });
 
-        apiaires.on('error', function(error) {
+        apiaiRequest.on('error', function(error) {
             console.log(error);
         });
          
-        apiaires.end();
+        apiaiRequest.end();
 
         
     } else if (received_message.attachments) {
@@ -165,6 +165,8 @@ function handlePostback(sender_psid, received_postback) {
 
 
 function callSendAPI(sender_psid, response) {
+    console.log(sender_psid,  response)
+
     // Construct the message body
     let request_body = {
         "recipient": {
