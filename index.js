@@ -2,13 +2,42 @@
 
 // Imports dependencies and set up http server
 const 
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  request = require('request'),
-  apiai = require('apiai'),
-  app = express().use(bodyParser.json()),  // creates express http server
-  apiaiClient = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
-  PAGE_ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC";
+    express = require('express'),
+    bodyParser = require('body-parser'),
+    request = require('request'),
+    apiai = require('apiai'),
+    app = express().use(bodyParser.json()),  // creates express http server
+    apiaiClient = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
+    PAGE_ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC",
+    { MongoClient } = require('mongodb'),
+    cheerio = require("cheerio");
+
+app.set('view engine', 'pug')
+app.use(express.static('public'))
+
+app.get('/', async function (req, res) {
+    const db = await MongoClient.connect("mongodb://127.0.0.1:27017/codingbot")
+    const result = await db.collection('answers').findOne({"title": "if..else"});
+
+    request({
+        uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
+    }, function(error, response, body) {
+        var $ = cheerio.load(body);
+
+        // var x = $("article#wikiArticle");
+
+        console.log(x.html());
+        // var x = $(".answer .answercell .post-text").first();
+        // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+        // x.find('pre').each(function () {
+        //     var qw = $(this);
+        //     qw.addClass('prettyprint');
+        // });
+        res.render('index', { title: result.title, message: result.body, code: x.html() })
+    
+    });
+})
+
 
 // Adds support for GET requests to our webhook
 app.get('/webhook', (req, res) => {
@@ -135,7 +164,7 @@ function handleMessage(sender_psid, received_message) {
                     },
                     {
                         "type":"web_url",
-                        "url":"https://google.com",
+                        "url":"https://devdocs.io/#q=javascript+if",
                         "title":"Select Criteria",
                         "webview_height_ratio": "tall",
                       }
