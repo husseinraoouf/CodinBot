@@ -12,31 +12,31 @@ const
     { MongoClient } = require('mongodb'),
     cheerio = require("cheerio");
 
-app.set('view engine', 'pug')
-app.use(express.static('public'))
+// app.set('view engine', 'pug')
+// app.use(express.static('public'))
 
-app.get('/', async function (req, res) {
-    const db = await MongoClient.connect("mongodb://127.0.0.1:27017/codingbot")
-    const result = await db.collection('answers').findOne({"title": "if..else"});
+// app.get('/', async function (req, res) {
+//     const db = await MongoClient.connect("mongodb://127.0.0.1:27017/codingbot")
+//     const result = await db.collection('answers').findOne({"title": "if..else"});
 
-    request({
-        uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
-    }, function(error, response, body) {
-        var $ = cheerio.load(body);
+//     request({
+//         uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
+//     }, function(error, response, body) {
+//         var $ = cheerio.load(body);
 
-        // var x = $("article#wikiArticle");
+//         // var x = $("article#wikiArticle");
 
-        console.log(x.html());
-        // var x = $(".answer .answercell .post-text").first();
-        // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-        // x.find('pre').each(function () {
-        //     var qw = $(this);
-        //     qw.addClass('prettyprint');
-        // });
-        res.render('index', { title: result.title, message: result.body, code: x.html() })
+//         console.log(x.html());
+//         // var x = $(".answer .answercell .post-text").first();
+//         // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+//         // x.find('pre').each(function () {
+//         //     var qw = $(this);
+//         //     qw.addClass('prettyprint');
+//         // });
+//         res.render('index', { title: result.title, message: result.body, code: x.html() })
     
-    });
-})
+//     });
+// })
 
 
 // Adds support for GET requests to our webhook
