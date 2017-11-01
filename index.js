@@ -106,7 +106,7 @@ app.post('/webhook', (req, res) => {
 });
 
 
-function handleMessage(sender_psid, received_message) {
+async function handleMessage(sender_psid, received_message) {
     let response;
 
     // Checks if the message contains text
@@ -118,7 +118,7 @@ function handleMessage(sender_psid, received_message) {
             sessionId: sender_psid,
         });
 
-        apiaiRequest.on('response', async function(response) {
+        await apiaiRequest.on('response', async function(response) {
             if (response.result.action == "querySyntax"){
                 if (response.result.metadata.intentName == "HTML") {
                     response = {
