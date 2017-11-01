@@ -118,7 +118,7 @@ function handleMessage(sender_psid, received_message) {
             sessionId: sender_psid,
         });
 
-        apiaiRequest.on('response', function(response) {
+        apiaiRequest.on('response', async function(response) {
             if (response.result.action == "querySyntax"){
                 if (response.result.metadata.intentName == "HTML") {
                     response = {
@@ -141,7 +141,7 @@ function handleMessage(sender_psid, received_message) {
                 }
 
                 // Send the response message
-                callSendAPI(sender_psid, response);
+                await callSendAPI(sender_psid, response);
                 askForRate(sender_psid);
             } else if (response.result.action == "rating") {
 
