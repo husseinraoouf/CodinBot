@@ -68,7 +68,7 @@ app.get('/webhook', (req, res) => {
 });
 
 // Creates the endpoint for our webhook
-app.post('/webhook', (req, res) => {  
+app.post('/webhook', async (req, res) => {  
 
     // Parse the request body from the POST
     let body = req.body;
@@ -77,7 +77,7 @@ app.post('/webhook', (req, res) => {
     if (body.object === 'page') {
 
         // Iterate over each entry - there may be multiple if batched
-        body.entry.forEach(function(entry) {
+        await body.entry.forEach(async function(entry) {
 
             // Get the webhook event. entry.messaging is an array, but 
             // will only ever contain one event, so we get index 0
@@ -89,9 +89,9 @@ app.post('/webhook', (req, res) => {
             // Check if the event is a message or postback and
             // pass the event to the appropriate handler function
             if (webhook_event.message) {
-                handleMessage(sender_psid, webhook_event.message);        
+                await handleMessage(sender_psid, webhook_event.message);        
             } else if (webhook_event.postback) {
-                handlePostback(sender_psid, webhook_event.postback);
+                await handlePostback(sender_psid, webhook_event.postback);
             }
         });
 
@@ -142,12 +142,12 @@ async function handleMessage(sender_psid, received_message) {
 
                 // Send the response message
                 await callSendAPI(sender_psid, response);
-                askForRate(sender_psid);
+                await askForRate(sender_psid);
             } else if (response.result.action == "rating") {
 
             } else {
                 // Send the response message
-                sendText(sender_psid, response.result.fulfillment.speech);
+                await sendText(sender_psid, response.result.fulfillment.speech);
             }
         });
 
@@ -194,12 +194,12 @@ async function handleMessage(sender_psid, received_message) {
         }
 
         // Send the response message
-        callSendAPI(sender_psid, response);
+        await callSendAPI(sender_psid, response);
     }    
 }
 
 
-function handlePostback(sender_psid, received_postback) {
+async function handlePostback(sender_psid, received_postback) {
     
     let response;
 
@@ -214,11 +214,11 @@ function handlePostback(sender_psid, received_postback) {
     }
     
     // Send the message to acknowledge the postback
-    callSendAPI(sender_psid, response);
+    await callSendAPI(sender_psid, response);
 }
 
 
-function callSendAPI(sender_psid, response) {
+async function callSendAPI(sender_psid, response) {
     // Construct the message body
     let request_body = {
         "recipient": {
@@ -228,7 +228,7 @@ function callSendAPI(sender_psid, response) {
     }
 
     // Send the HTTP request to the Messenger Platform
-    request({
+    await request({
         "uri": "https://graph.facebook.com/v2.6/me/messages",
         "qs": { "access_token": PAGE_ACCESS_TOKEN },
         "method": "POST",
@@ -242,18 +242,18 @@ function callSendAPI(sender_psid, response) {
     }); 
 }
 
-function sendText(sender_psid, text) {
+async function sendText(sender_psid, text) {
 
     const response = {
         text,
     }
 
     // Send the response message
-    callSendAPI(sender_psid, response);
+    await callSendAPI(sender_psid, response);
 }
 
 
-function rate(sender_psid) {
+async function rate(sender_psid) {
     
     const response = {
                 "text": "Please Rate",
@@ -286,12 +286,12 @@ function rate(sender_psid) {
                 ]
     }
 
-    callSendAPI(sender_psid, response);
+    await callSendAPI(sender_psid, response);
 }
 
-function askForRate(sender_psid) {
-    sendText(sender_psid, "Please Rate First");
-    rate(sender_psid);
+async function askForRate(sender_psid) {
+    await sendText(sender_psid, "Please Rate First");
+    await rate(sender_psid);
 }
 
 
