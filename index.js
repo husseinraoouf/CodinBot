@@ -132,7 +132,7 @@ async function handleMessage(sender_psid, received_message) {
         await apiaiRequest.on('response', async function(response) {
             if (response.result.action == "querySyntax"){
                 if (response.result.metadata.intentName == "HTML") {
-                    const response = {
+                    response = {
                         "attachment":{
                           "type":"template",
                           "payload":{
