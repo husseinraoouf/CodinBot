@@ -290,7 +290,6 @@ function rate(sender_psid) {
 }
 
 function askForRate(sender_psid) {
-    sendText(sender_psid, "Please Rate First");
     rate(sender_psid);
 }
 
