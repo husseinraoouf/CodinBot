@@ -68,7 +68,7 @@ app.get('/webhook', (req, res) => {
 });
 
 // Creates the endpoint for our webhook
-app.post('/webhook', async (req, res) => {  
+app.post('/webhook', (req, res) => {  
 
     // Parse the request body from the POST
     let body = req.body;
@@ -77,7 +77,7 @@ app.post('/webhook', async (req, res) => {
     if (body.object === 'page') {
 
         // Iterate over each entry - there may be multiple if batched
-        await body.entry.forEach(async function(entry) {
+        body.entry.forEach(function(entry) {
 
             // Get the webhook event. entry.messaging is an array, but 
             // will only ever contain one event, so we get index 0
@@ -89,9 +89,9 @@ app.post('/webhook', async (req, res) => {
             // Check if the event is a message or postback and
             // pass the event to the appropriate handler function
             if (webhook_event.message) {
-                await handleMessage(sender_psid, webhook_event.message);        
+                handleMessage(sender_psid, webhook_event.message);        
             } else if (webhook_event.postback) {
-                await handlePostback(sender_psid, webhook_event.postback);
+                handlePostback(sender_psid, webhook_event.postback);
             }
         });
 
@@ -106,7 +106,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 
-async function handleMessage(sender_psid, received_message) {
+function handleMessage(sender_psid, received_message) {
     let response;
 
     // Checks if the message contains text
@@ -118,7 +118,7 @@ async function handleMessage(sender_psid, received_message) {
             sessionId: sender_psid,
         });
 
-        await apiaiRequest.on('response', async function(response) {
+        apiaiRequest.on('response', function(response) {
             if (response.result.action == "querySyntax"){
                 if (response.result.metadata.intentName == "HTML") {
                     response = {
@@ -141,12 +141,12 @@ async function handleMessage(sender_psid, received_message) {
                 }
 
                 // Send the response message
-                await callSendAPI(sender_psid, response, askForRate);
+                callSendAPI(sender_psid, response, askForRate);
             } else if (response.result.action == "rating") {
 
             } else {
                 // Send the response message
-                await sendText(sender_psid, response.result.fulfillment.speech);
+                sendText(sender_psid, response.result.fulfillment.speech);
             }
         });
 
@@ -193,12 +193,12 @@ async function handleMessage(sender_psid, received_message) {
         }
 
         // Send the response message
-        await callSendAPI(sender_psid, response);
+        callSendAPI(sender_psid, response);
     }    
 }
 
 
-async function handlePostback(sender_psid, received_postback) {
+function handlePostback(sender_psid, received_postback) {
     
     let response;
 
@@ -213,11 +213,11 @@ async function handlePostback(sender_psid, received_postback) {
     }
     
     // Send the message to acknowledge the postback
-    await callSendAPI(sender_psid, response);
+    callSendAPI(sender_psid, response);
 }
 
 
-async function callSendAPI(sender_psid, response, cb) {
+function callSendAPI(sender_psid, response, cb) {
     // Construct the message body
     let request_body = {
         "recipient": {
@@ -227,7 +227,7 @@ async function callSendAPI(sender_psid, response, cb) {
     }
 
     // Send the HTTP request to the Messenger Platform
-    await request({
+    request({
         "uri": "https://graph.facebook.com/v2.6/me/messages",
         "qs": { "access_token": PAGE_ACCESS_TOKEN },
         "method": "POST",
@@ -242,18 +242,18 @@ async function callSendAPI(sender_psid, response, cb) {
     }); 
 }
 
-async function sendText(sender_psid, text) {
+function sendText(sender_psid, text) {
 
     const response = {
         text,
     }
 
     // Send the response message
-    await callSendAPI(sender_psid, response);
+    callSendAPI(sender_psid, response);
 }
 
 
-async function rate(sender_psid) {
+function rate(sender_psid) {
     
     const response = {
                 "text": "Please Rate",
@@ -286,12 +286,12 @@ async function rate(sender_psid) {
                 ]
     }
 
-    await callSendAPI(sender_psid, response);
+    callSendAPI(sender_psid, response);
 }
 
-async function askForRate(sender_psid) {
-    await sendText(sender_psid, "Please Rate First");
-    await rate(sender_psid);
+function askForRate(sender_psid) {
+    sendText(sender_psid, "Please Rate First");
+    rate(sender_psid);
 }
 
 
