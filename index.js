@@ -72,7 +72,6 @@ app.post('/webhook', (req, res) => {
 
     // Parse the request body from the POST
     let body = req.body;
-    console.log(JSON.stringify(body) );
     
     // Check the webhook event is from a Page subscription
     if (body.object === 'page') {
@@ -83,13 +82,9 @@ app.post('/webhook', (req, res) => {
             // Get the webhook event. entry.messaging is an array, but 
             // will only ever contain one event, so we get index 0
             let webhook_event = entry.messaging[0];
-            console.log(webhook_event);
-            
-
+           
             // Get the sender PSID
             let sender_psid = webhook_event.sender.id;
-            console.log('Sender PSID: ' + sender_psid);
-
 
             // Check if the event is a message or postback and
             // pass the event to the appropriate handler function
@@ -124,33 +119,36 @@ function handleMessage(sender_psid, received_message) {
         });
 
         apiaiRequest.on('response', function(response) {
-            if (response.result.metadata.intentName == "HTML") {
-                response = {
-                    "attachment":{
-                      "type":"template",
-                      "payload":{
-                        "template_type":"button",
-                        "text":"The Answer",
-                        "buttons":[
-                          {
-                            "type":"web_url",
-                            "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
-                            "title": response.result.fulfillment.speech.split("+").join(" "),
-                            "webview_height_ratio": "tall"
+            if (response.result.action == "querySyntax"){
+                if (response.result.metadata.intentName == "HTML") {
+                    response = {
+                        "attachment":{
+                          "type":"template",
+                          "payload":{
+                            "template_type":"button",
+                            "text":response.result.fulfillment.speech.split("+").join(" "),
+                            "buttons":[
+                              {
+                                "type":"web_url",
+                                "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
+                                "title": "The Answer",
+                                "webview_height_ratio": "tall"
+                              }
+                            ]
                           }
-                        ]
-                      }
+                        }
                     }
                 }
-            } else {
-                response = {
-                    text: response.result.fulfillment.speech,
-                };
-            }
 
-            
-            // Send the response message
-            callSendAPI(sender_psid, response);
+                // Send the response message
+                callSendAPI(sender_psid, response);
+                askForRate(sender_psid);
+            } else if (response.result.action == "rating") {
+
+            } else {
+                // Send the response message
+                sendText(sender_psid, response.result.fulfillment.speech);
+            }
         });
 
         apiaiRequest.on('error', function(error) {
@@ -221,12 +219,10 @@ function handlePostback(sender_psid, received_postback) {
 
 
 function callSendAPI(sender_psid, response) {
-    console.log(sender_psid,  response)
-
     // Construct the message body
     let request_body = {
         "recipient": {
-        "id": sender_psid
+            "id": sender_psid
         },
         "message": response
     }
@@ -246,6 +242,57 @@ function callSendAPI(sender_psid, response) {
     }); 
 }
 
+function sendText(sender_psid, text) {
+
+    response = {
+        text,
+    }
+
+    // Send the response message
+    callSendAPI(sender_psid, response);
+}
+
+
+function rate(sender_psid) {
+    
+    response = {
+                "text": "Please Rate",
+                "quick_replies": [
+                    {
+                        "content_type": "text",
+                        "title": "1",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "2",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "3",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "4",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "5",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    }
+                ]
+    }
+
+    callSendAPI(sender_psid, response);
+}
+
+function askForRate(sender_psid) {
+    sendText(sender_psid, "Please Rate First");
+    rate(sender_psid);
+}
 
 
 const PORT = process.argv[2] || 5000;
