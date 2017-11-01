@@ -1,9 +1,9 @@
 {
   "name": "CodingBot",
-  "version": "1.0.0", 
-  "engines" : {
-     "node" : "^8.8.1" 
-  }, 
+  "version": "1.0.0",
+  "engines": {
+    "node": "^8.8.1"
+  },
   "description": "Bot For Programmers",
   "main": "index.js",
   "repository": "https://github.com/husseinraoouf/CodingBot",
@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "apiai": "^4.0.3",
+    "async": "^2.5.0",
     "body-parser": "^1.18.2",
     "cheerio": "^1.0.0-rc.2",
     "express": "^4.16.2",

@@ -10,7 +10,8 @@ const
     apiaiClient = apiai("1f56152188f646b38ab963a7111d2168", {language: "en", requestSource: "fb"}),
     PAGE_ACCESS_TOKEN = "EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC",
     { MongoClient } = require('mongodb'),
-    cheerio = require("cheerio");
+    cheerio = require("cheerio"),
+    async = require('async');
 
 // app.set('view engine', 'pug')
 // app.use(express.static('public'))
@@ -77,7 +78,7 @@ app.post('/webhook', async (req, res) => {
     if (body.object === 'page') {
 
         // Iterate over each entry - there may be multiple if batched
-        await body.entry.forEach(async function(entry) {
+        await async.each(body.entry, function(entry,cb) {
 
             // Get the webhook event. entry.messaging is an array, but 
             // will only ever contain one event, so we get index 0
@@ -89,9 +90,19 @@ app.post('/webhook', async (req, res) => {
             // Check if the event is a message or postback and
             // pass the event to the appropriate handler function
             if (webhook_event.message) {
-                await handleMessage(sender_psid, webhook_event.message);        
+                handleMessage(sender_psid, webhook_event.message);        
             } else if (webhook_event.postback) {
-                await handlePostback(sender_psid, webhook_event.postback);
+                handlePostback(sender_psid, webhook_event.postback);
+            }
+            cb();
+        }, function(err) {
+            // if any of the file processing produced an error, err would equal that error
+            if( err ) {
+              // One of the iterations produced an error.
+              // All processing will now stop.
+              console.log('A file failed to process');
+            } else {
+              console.log('All files have been processed successfully');
             }
         });
 
@@ -121,7 +132,7 @@ async function handleMessage(sender_psid, received_message) {
         await apiaiRequest.on('response', async function(response) {
             if (response.result.action == "querySyntax"){
                 if (response.result.metadata.intentName == "HTML") {
-                    response = {
+                    const response = {
                         "attachment":{
                           "type":"template",
                           "payload":{
@@ -141,7 +152,9 @@ async function handleMessage(sender_psid, received_message) {
                 }
 
                 // Send the response message
-                await callSendAPI(sender_psid, response, askForRate);
+                await callSendAPI(sender_psid, response);
+                await askForRate(sender_psid);
+
             } else if (response.result.action == "rating") {
 
             } else {
@@ -217,7 +230,7 @@ async function handlePostback(sender_psid, received_postback) {
 }
 
 
-async function callSendAPI(sender_psid, response, callback) {
+async function callSendAPI(sender_psid, response) {
     // Construct the message body
     let request_body = {
         "recipient": {
@@ -238,9 +251,7 @@ async function callSendAPI(sender_psid, response, callback) {
         } else {
             console.error("Unable to send message:" + err);
         }
-    });
-
-    if (callback) callback(sender_psid);
+    }); 
 }
 
 async function sendText(sender_psid, text) {
