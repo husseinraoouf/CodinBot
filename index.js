@@ -141,7 +141,7 @@ async function handleMessage(sender_psid, received_message) {
                 }
 
                 // Send the response message
-                await callSendAPI(sender_psid, response);
+                // await callSendAPI(sender_psid, response);
                 await askForRate(sender_psid);
             } else if (response.result.action == "rating") {
 
