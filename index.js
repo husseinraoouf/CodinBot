@@ -255,7 +255,7 @@ function sendText(sender_psid, text) {
 
 function rate(sender_psid) {
     
-    response = {
+    const response = {
                 "text": "Please Rate",
                 "quick_replies": [
                     {
