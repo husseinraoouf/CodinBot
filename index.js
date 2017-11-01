@@ -244,7 +244,7 @@ function callSendAPI(sender_psid, response) {
 
 function sendText(sender_psid, text) {
 
-    response = {
+    const response = {
         text,
     }
 
