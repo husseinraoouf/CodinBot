@@ -125,7 +125,21 @@ function handleMessage(sender_psid, received_message) {
 
         apiaiRequest.on('response', function(response) {
             response = {
-                "text": response.result.fulfillment.speech
+                "attachment":{
+                  "type":"template",
+                  "payload":{
+                    "template_type":"button",
+                    "text":"The Answer",
+                    "buttons":[
+                      {
+                        "type":"web_url",
+                        "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
+                        "title": response.result.fulfillment.speech.split("+").join(" "),
+                        "webview_height_ratio": "tall"
+                      }
+                    ]
+                  }
+                }
             }
             
             // Send the response message
