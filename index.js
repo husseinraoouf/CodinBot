@@ -141,8 +141,7 @@ async function handleMessage(sender_psid, received_message) {
                 }
 
                 // Send the response message
-                await callSendAPI(sender_psid, response);
-                askForRate(sender_psid);
+                await callSendAPI(sender_psid, response, askForRate);
             } else if (response.result.action == "rating") {
 
             } else {
@@ -218,7 +217,7 @@ async function handlePostback(sender_psid, received_postback) {
 }
 
 
-async function callSendAPI(sender_psid, response) {
+async function callSendAPI(sender_psid, response, callback) {
     // Construct the message body
     let request_body = {
         "recipient": {
@@ -239,7 +238,9 @@ async function callSendAPI(sender_psid, response) {
         } else {
             console.error("Unable to send message:" + err);
         }
-    }); 
+    });
+
+    callback(sender_psid);
 }
 
 async function sendText(sender_psid, text) {
