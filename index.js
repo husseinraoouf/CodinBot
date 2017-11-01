@@ -240,7 +240,7 @@ async function callSendAPI(sender_psid, response, callback) {
         }
     });
 
-    callback(sender_psid);
+    if (callback) callback(sender_psid);
 }
 
 async function sendText(sender_psid, text) {
