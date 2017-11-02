@@ -150,7 +150,7 @@ const start = async () => {
                     }
     
                     // Send the response message
-                    callSendAPI(sender_psid, response, askForRate);
+                    callSendMessageAPI(sender_psid, response, askForRate);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
     
@@ -214,7 +214,7 @@ const start = async () => {
             }
     
             // Send the response message
-            callSendAPI(sender_psid, response);
+            callSendMessageAPI(sender_psid, response);
         }    
     }
     
@@ -234,11 +234,37 @@ const start = async () => {
         }
         
         // Send the message to acknowledge the postback
-        callSendAPI(sender_psid, response);
+        callSendMessageAPI(sender_psid, response);
     }
     
+
+    function typeOn(sender_psid) {
+        
+        let request_body = {
+            "recipient": {
+                "id": sender_psid
+            },
+            "sender_action":"typing_on"
+        }
     
-    function callSendAPI(sender_psid, response, cb) {
+        callSendAPI(request_body);
+    }
+    
+    function typeOff(sender_psid) {
+        
+        let request_body = {
+            "recipient": {
+                "id": sender_psid
+            },
+            "sender_action":"typing_off"
+        }
+    
+        callSendAPI(request_body);
+    
+    }
+
+
+    function callSendMessageAPI(sender_psid, response, cb) {
         // Construct the message body
         let request_body = {
             "recipient": {
@@ -247,6 +273,11 @@ const start = async () => {
             "message": response
         }
     
+        callSendAPI(request_body, cb);
+    }
+
+    function callSendAPI(request_body, cb) {
+
         // Send the HTTP request to the Messenger Platform
         request({
             "uri": "https://graph.facebook.com/v2.6/me/messages",
@@ -261,6 +292,7 @@ const start = async () => {
             }
             if (cb) cb(sender_psid);
         }); 
+
     }
     
     function sendText(sender_psid, text) {
@@ -270,7 +302,7 @@ const start = async () => {
         }
     
         // Send the response message
-        callSendAPI(sender_psid, response);
+        callSendMessageAPI(sender_psid, response);
     }
     
     
@@ -306,7 +338,7 @@ const start = async () => {
             ]
         }
     
-        callSendAPI(sender_psid, response);
+        callSendMessageAPI(sender_psid, response);
     
     }
 
