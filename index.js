@@ -136,6 +136,7 @@ function handleMessage(sender_psid, received_message) {
 
         apiaiRequest.on('response', function(response) {
             if (response.result.action == "querySyntax"){
+                redis.set(sender_psid, response.result.fulfillment.speech)                
                 if (response.result.metadata.intentName == "HTML") {
                     response = {
                         "attachment":{
@@ -156,7 +157,6 @@ function handleMessage(sender_psid, received_message) {
                     }
                 }
 
-                redis.set(sender_psid, response.result.fulfillment.speech)
                 // Send the response message
                 callSendAPI(sender_psid, response, askForRate);
             } else if (response.result.action == "rating") {
