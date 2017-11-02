@@ -4,7 +4,7 @@ module.exports = ({ Keywords, Users }) => {
 
     methods.addrating = async (result, rate) => {
         console.log(result, rate)
-        const result = await Keywords.update({keyword: result}, {$set: {rating: rate}});
+        const response = await Keywords.update({keyword: result}, {$set: {rating: rate}});
 
     }
     return methods;
