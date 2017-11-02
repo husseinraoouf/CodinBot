@@ -114,6 +114,200 @@ const start = async () => {
     });
 
 
+    function handleMessage(sender_psid, received_message) {
+        let response;
+    
+        // Checks if the message contains text
+        if (received_message.text) {
+            
+            // Create the payload for a basic text message, which
+            // will be added to the body of our request to the Send API
+            var apiaiRequest = apiaiClient.textRequest(received_message.text, {
+                sessionId: sender_psid,
+            });
+    
+            apiaiRequest.on('response', function(response) {
+                if (response.result.action == "querySyntax"){
+                    redis.set(sender_psid, response.result.fulfillment.speech)                
+                    if (response.result.metadata.intentName == "HTML") {
+                        response = {
+                            "attachment":{
+                              "type":"template",
+                              "payload":{
+                                "template_type":"button",
+                                "text":response.result.fulfillment.speech.split("+").join(" "),
+                                "buttons":[
+                                  {
+                                    "type":"web_url",
+                                    "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
+                                    "title": "The Answer",
+                                    "webview_height_ratio": "tall"
+                                  }
+                                ]
+                              }
+                            }
+                        }
+                    }
+    
+                    // Send the response message
+                    callSendAPI(sender_psid, response, askForRate);
+                } else if (response.result.action == "rating") {
+                    const rate = response.result.parameters.number;
+    
+                    console.log(rate);
+                    if (rate >= 1 && rate <= 5) {
+                        redis.get(sender_psid, async function (err, result) {
+                            await DB.keywordDB.addrating(result, rate);
+                            sendText(sender_psid, "Thank you");
+                        });
+                    } else {
+                        sendText(sender_psid, "Please rate between 1 and 5");                    
+                        askForRate(sender_psid);
+                    }
+                } else {
+                    // Send the response message
+                    sendText(sender_psid, response.result.fulfillment.speech);
+                }
+            });
+    
+            apiaiRequest.on('error', function(error) {
+                console.log(error);
+            });
+             
+            apiaiRequest.end();
+    
+            
+        } else if (received_message.attachments) {
+            // Get the URL of the message attachment
+            let attachment_url = received_message.attachments[0].payload.url;
+            response = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                    "template_type": "generic",
+                    "elements": [{
+                        "title": "Is this the right picture?",
+                        "subtitle": "Tap a button to answer.",
+                        "image_url": attachment_url,
+                        "buttons": [
+                        {
+                            "type": "postback",
+                            "title": "Yes!",
+                            "payload": "yes",
+                        },
+                        {
+                            "type": "postback",
+                            "title": "No!",
+                            "payload": "no",
+                        },
+                        {
+                            "type":"web_url",
+                            "url":"https://devdocs.io/#q=javascript+if",
+                            "title":"Select Criteria",
+                            "webview_height_ratio": "tall",
+                          }
+                        ],
+                    }]
+                    }
+                }
+            }
+    
+            // Send the response message
+            callSendAPI(sender_psid, response);
+        }    
+    }
+    
+    
+    function handlePostback(sender_psid, received_postback) {
+        
+        let response;
+    
+        // Get the payload for the postback
+        let payload = received_postback.payload;
+    
+        // Set the response based on the postback payload
+        if (payload === 'yes') {
+            response = { "text": "Thanks!" }
+        } else if (payload === 'no') {
+            response = { "text": "Oops, try sending another image." }
+        }
+        
+        // Send the message to acknowledge the postback
+        callSendAPI(sender_psid, response);
+    }
+    
+    
+    function callSendAPI(sender_psid, response, cb) {
+        // Construct the message body
+        let request_body = {
+            "recipient": {
+                "id": sender_psid
+            },
+            "message": response
+        }
+    
+        // Send the HTTP request to the Messenger Platform
+        request({
+            "uri": "https://graph.facebook.com/v2.6/me/messages",
+            "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
+            "method": "POST",
+            "json": request_body
+        }, (err, res, body) => {
+            if (!err) {
+                console.log('message sent!')
+            } else {
+                console.error("Unable to send message:" + err);
+            }
+            if (cb) cb(sender_psid);
+        }); 
+    }
+    
+    function sendText(sender_psid, text) {
+    
+        const response = {
+            text,
+        }
+    
+        // Send the response message
+        callSendAPI(sender_psid, response);
+    }
+    
+    
+    function askForRate(sender_psid) {
+        const response = {
+            "text": "Please Rate",
+            "quick_replies": [
+                {
+                    "content_type": "text",
+                    "title": "1",
+                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                },
+                {
+                    "content_type": "text",
+                    "title": "2",
+                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                },
+                {
+                    "content_type": "text",
+                    "title": "3",
+                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                },
+                {
+                    "content_type": "text",
+                    "title": "4",
+                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                },
+                {
+                    "content_type": "text",
+                    "title": "5",
+                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                }
+            ]
+        }
+    
+        callSendAPI(sender_psid, response);
+    
+    }
 
     const PORT = process.argv[2] || 5000;
     app.listen(PORT, () => {
@@ -122,200 +316,6 @@ const start = async () => {
 };
 
 
-function handleMessage(sender_psid, received_message) {
-    let response;
-
-    // Checks if the message contains text
-    if (received_message.text) {
-        
-        // Create the payload for a basic text message, which
-        // will be added to the body of our request to the Send API
-        var apiaiRequest = apiaiClient.textRequest(received_message.text, {
-            sessionId: sender_psid,
-        });
-
-        apiaiRequest.on('response', function(response) {
-            if (response.result.action == "querySyntax"){
-                redis.set(sender_psid, response.result.fulfillment.speech)                
-                if (response.result.metadata.intentName == "HTML") {
-                    response = {
-                        "attachment":{
-                          "type":"template",
-                          "payload":{
-                            "template_type":"button",
-                            "text":response.result.fulfillment.speech.split("+").join(" "),
-                            "buttons":[
-                              {
-                                "type":"web_url",
-                                "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
-                                "title": "The Answer",
-                                "webview_height_ratio": "tall"
-                              }
-                            ]
-                          }
-                        }
-                    }
-                }
-
-                // Send the response message
-                callSendAPI(sender_psid, response, askForRate);
-            } else if (response.result.action == "rating") {
-                const rate = response.result.parameters.number;
-
-                console.log(rate);
-                if (rate >= 1 && rate <= 5) {
-                    redis.get(sender_psid, async function (err, result) {
-                        await DB.keywordDB.addrating(result, rate);
-                        sendText(sender_psid, "Thank you");
-                    });
-                } else {
-                    sendText(sender_psid, "Please rate between 1 and 5");                    
-                    askForRate(sender_psid);
-                }
-            } else {
-                // Send the response message
-                sendText(sender_psid, response.result.fulfillment.speech);
-            }
-        });
-
-        apiaiRequest.on('error', function(error) {
-            console.log(error);
-        });
-         
-        apiaiRequest.end();
-
-        
-    } else if (received_message.attachments) {
-        // Get the URL of the message attachment
-        let attachment_url = received_message.attachments[0].payload.url;
-        response = {
-            "attachment": {
-                "type": "template",
-                "payload": {
-                "template_type": "generic",
-                "elements": [{
-                    "title": "Is this the right picture?",
-                    "subtitle": "Tap a button to answer.",
-                    "image_url": attachment_url,
-                    "buttons": [
-                    {
-                        "type": "postback",
-                        "title": "Yes!",
-                        "payload": "yes",
-                    },
-                    {
-                        "type": "postback",
-                        "title": "No!",
-                        "payload": "no",
-                    },
-                    {
-                        "type":"web_url",
-                        "url":"https://devdocs.io/#q=javascript+if",
-                        "title":"Select Criteria",
-                        "webview_height_ratio": "tall",
-                      }
-                    ],
-                }]
-                }
-            }
-        }
-
-        // Send the response message
-        callSendAPI(sender_psid, response);
-    }    
-}
-
-
-function handlePostback(sender_psid, received_postback) {
-    
-    let response;
-
-    // Get the payload for the postback
-    let payload = received_postback.payload;
-
-    // Set the response based on the postback payload
-    if (payload === 'yes') {
-        response = { "text": "Thanks!" }
-    } else if (payload === 'no') {
-        response = { "text": "Oops, try sending another image." }
-    }
-    
-    // Send the message to acknowledge the postback
-    callSendAPI(sender_psid, response);
-}
-
-
-function callSendAPI(sender_psid, response, cb) {
-    // Construct the message body
-    let request_body = {
-        "recipient": {
-            "id": sender_psid
-        },
-        "message": response
-    }
-
-    // Send the HTTP request to the Messenger Platform
-    request({
-        "uri": "https://graph.facebook.com/v2.6/me/messages",
-        "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
-        "method": "POST",
-        "json": request_body
-    }, (err, res, body) => {
-        if (!err) {
-            console.log('message sent!')
-        } else {
-            console.error("Unable to send message:" + err);
-        }
-        if (cb) cb(sender_psid);
-    }); 
-}
-
-function sendText(sender_psid, text) {
-
-    const response = {
-        text,
-    }
-
-    // Send the response message
-    callSendAPI(sender_psid, response);
-}
-
-
-function askForRate(sender_psid) {
-    const response = {
-        "text": "Please Rate",
-        "quick_replies": [
-            {
-                "content_type": "text",
-                "title": "1",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-            },
-            {
-                "content_type": "text",
-                "title": "2",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-            },
-            {
-                "content_type": "text",
-                "title": "3",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-            },
-            {
-                "content_type": "text",
-                "title": "4",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-            },
-            {
-                "content_type": "text",
-                "title": "5",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-            }
-        ]
-    }
-
-    callSendAPI(sender_psid, response);
-
-}
 
 
 // 5
