@@ -159,6 +159,7 @@ const start = async () => {
                         redis.get(sender_psid, async function (err, result) {
                             await DB.keywordDB.addrating(result, rate);
                             sendText(sender_psid, "Thank you");
+                            redis.del(sender_psid);
                         });
                     } else {
                         sendText(sender_psid, "Please rate between 1 and 5");                    
