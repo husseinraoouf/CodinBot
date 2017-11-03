@@ -9,10 +9,8 @@ const
     apiai = require('apiai'),
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"}),
     cheerio = require("cheerio"),
-    connectDB = require('./db'),
-    Redis = require('ioredis'),
-    redis = new Redis('redis://h:p1ba3d42e0402d1d4dc9966806293dcac7914373ba1963f477924a8025cfa1f6c@ec2-34-206-181-153.compute-1.amazonaws.com:58069');
-    
+    connectDB = require('./db');
+
 const start = async () => {
     // 3
     const DB = await connectDB();
@@ -128,7 +126,6 @@ const start = async () => {
     
             apiaiRequest.on('response', function(response) {
                 if (response.result.action == "querySyntax"){
-                    redis.set(sender_psid, response.result.fulfillment.speech)                
                     if (response.result.metadata.intentName == "HTML") {
                         response = {
                             "attachment":{
@@ -156,11 +153,8 @@ const start = async () => {
     
                     console.log(rate);
                     if (rate >= 1 && rate <= 5) {
-                        redis.get(sender_psid, async function (err, result) {
-                            await DB.keywordDB.addrating(result, rate);
-                            sendText(sender_psid, "Thank you");
-                            redis.del(sender_psid);
-                        });
+                        DB.keywordDB.addrating(response.result.parameters.keyword, rate);
+                        sendText(sender_psid, "Thank you");
                     } else {
                         sendText(sender_psid, "Please rate between 1 and 5");                    
                         askForRate(sender_psid);
