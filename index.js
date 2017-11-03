@@ -18,31 +18,37 @@ const start = async () => {
     app = express();
     app.use(bodyParser.json());
 
-    // app.set('view engine', 'pug')
-    // app.use(express.static('public'))
+    app.set('view engine', 'pug')
+    app.use(express.static('public'))
 
-    // app.get('/', async function (req, res) {
-    //     const db = await MongoClient.connect("mongodb://127.0.0.1:27017/codingbot")
-    //     const result = await db.collection('answers').findOne({"title": "if..else"});
+    app.get('/', async function (req, res) {
 
-    //     request({
-    //         uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
-    //     }, function(error, response, body) {
-    //         var $ = cheerio.load(body);
+        console.log(req.query);
 
-    //         // var x = $("article#wikiArticle");
 
-    //         console.log(x.html());
-    //         // var x = $(".answer .answercell .post-text").first();
-    //         // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-    //         // x.find('pre').each(function () {
-    //         //     var qw = $(this);
-    //         //     qw.addClass('prettyprint');
-    //         // });
-    //         res.render('index', { title: result.title, message: result.body, code: x.html() })
+        const result = await DB.keywordDB.getKeyword(req.query);
+
+        // request({
+        //     uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
+        // }, function(error, response, body) {
+        //     var $ = cheerio.load(body);
+
+        //     // var x = $("article#wikiArticle");
+
+        //     console.log(x.html());
+        //     // var x = $(".answer .answercell .post-text").first();
+        //     // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+        //     // x.find('pre').each(function () {
+        //     //     var qw = $(this);
+        //     //     qw.addClass('prettyprint');
+        //     // });
+        //     res.render('index', { title: result.title, message: result.body, code: x.html() })
         
-    //     });
-    // })
+        // });
+
+        console.log (result.difintion);
+        res.render('index', { title: result.keyword + " | " + result.language, difintion: result.difintion, details: result.details, examples: result.examples })
+    })
 
 
     // Adds support for GET requests to our webhook
@@ -137,7 +143,7 @@ const start = async () => {
                             "buttons":[
                                 {
                                 "type":"web_url",
-                                "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
+                                "url": "https://codingbot.herokuapp.com/?language=" + response.result.parameters.language +"&keyword=" + response.result.parameters.keyword + "&keywordkind=" + response.result.parameters.keywordkind,
                                 "title": "The Answer",
                                 "webview_height_ratio": "tall"
                                 }

@@ -5,12 +5,19 @@ html
     script(src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js")
   body
     //- h1= message
-    div=code
-    //- pre(class="prettyprint")
-    //-     code= code
-
+    div
+      h1= difintion
+      each val, i in details
+        if val
+          p= val
+        if examples[i]
+          pre(class="prettyprint")
+            code= examples[i]
 
     script.
+        document.getElementsByTagName("html")[0].innerHTML = document.getElementsByTagName("html")[0].innerHTML.replace(/\\n/g, '\n');
+
+
         //- document.getElementsByTagName("div")[0].innerHTML = document.getElementsByTagName("div")[0].innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         //- var qw = document.getElementsByTagName("code");
         //- for( var i = 0, len = qw.length; i < len; i++ ) {
@@ -19,12 +26,12 @@ html
         //- }
 
 
-        document.getElementsByTagName("div")[0].innerHTML = document.getElementsByTagName("div")[0].innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-        var qw = document.getElementsByTagName("pre");
-        for( var i = 0, len = qw.length; i < len; i++ ) {
-            console.log(qw[i].innerHTML);
-            qw[i].innerHTML = qw[i].innerHTML.replace(/&amp;/g, '&')
-        }
+        //- document.getElementsByTagName("div")[0].innerHTML = document.getElementsByTagName("div")[0].innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        //- var qw = document.getElementsByTagName("pre");
+        //- for( var i = 0, len = qw.length; i < len; i++ ) {
+        //-     console.log(qw[i].innerHTML);
+        //-     qw[i].innerHTML = qw[i].innerHTML.replace(/&amp;/g, '&')
+        //- }
 
 
         
