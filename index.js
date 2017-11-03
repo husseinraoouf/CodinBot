@@ -126,6 +126,8 @@ const start = async () => {
     
             apiaiRequest.on('response', function(response) {
                 if (response.result.action == "querySyntax"){
+
+                    console.log(response);
                     response = {
                         "attachment":{
                             "type":"template",
@@ -143,6 +145,8 @@ const start = async () => {
                             }
                         }
                     }
+
+                    console.log(response);                    
     
                     // Send the response message
                     callSendMessageAPI(sender_psid, response, askForRate);
