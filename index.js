@@ -126,22 +126,20 @@ const start = async () => {
     
             apiaiRequest.on('response', function(response) {
                 if (response.result.action == "querySyntax"){
-                    if (response.result.metadata.intentName == "HTML") {
-                        response = {
-                            "attachment":{
-                              "type":"template",
-                              "payload":{
-                                "template_type":"button",
-                                "text":response.result.fulfillment.speech.split("+").join(" "),
-                                "buttons":[
-                                  {
-                                    "type":"web_url",
-                                    "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
-                                    "title": "The Answer",
-                                    "webview_height_ratio": "tall"
-                                  }
-                                ]
-                              }
+                    response = {
+                        "attachment":{
+                            "type":"template",
+                            "payload":{
+                            "template_type":"button",
+                            "text":response.result.fulfillment.speech.split("+").join(" "),
+                            "buttons":[
+                                {
+                                "type":"web_url",
+                                "url": "https://devdocs.io/#q=" + response.result.fulfillment.speech,
+                                "title": "The Answer",
+                                "webview_height_ratio": "tall"
+                                }
+                            ]
                             }
                         }
                     }
