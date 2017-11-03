@@ -153,7 +153,7 @@ const start = async () => {
     
                     console.log(rate);
                     if (rate >= 1 && rate <= 5) {
-                        DB.keywordDB.addrating(response.result.parameters.keyword, rate);
+                        DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, rate);
                         sendText(sender_psid, "Thank you");
                     } else {
                         sendText(sender_psid, "Please rate between 1 and 5");                    
@@ -241,7 +241,7 @@ const start = async () => {
             "sender_action":"typing_on"
         }
     
-        callSendAPI(request_body);
+        callSendAPI(request_body, sender_psid);
     }
     
     function typeOff(sender_psid) {
@@ -253,7 +253,7 @@ const start = async () => {
             "sender_action":"typing_off"
         }
     
-        callSendAPI(request_body);
+        callSendAPI(request_body, sender_psid);
     
     }
 
@@ -267,10 +267,10 @@ const start = async () => {
             "message": response
         }
     
-        callSendAPI(request_body, cb);
+        callSendAPI(request_body, sender_psid, cb);
     }
 
-    function callSendAPI(request_body, cb) {
+    function callSendAPI(request_body, sender_psid, cb) {
 
         // Send the HTTP request to the Messenger Platform
         request({
