@@ -2,12 +2,12 @@ module.exports = ({ Keywords, Users }) => {
     
     let methods = {}
 
-    methods.addrating = async (language, keyword, rate) => {
-        console.log (language, keyword, rate);
+    methods.addrating = async (language, keyword, keywordkind, rate) => {
+        console.log (language, keyword, keywordkind, rate);
 
         const response = await Keywords.update(
-            { keyword, language },
-            { $set: { rating: rate }, $inc: { numrated: 1} }
+            { keyword, language, keywordkind },
+            { $set: { rating: rate }, $inc: { numrated: 1 } }
         );
 
         console.log(response);
