@@ -90,7 +90,7 @@ const start = async () => {
     
             // Iterate over each entry - there may be multiple if batched
             body.entry.forEach(function(entry) {
-                console.log(entry);
+                console.log(JSON.stringify(entry));
                 // Get the webhook event. entry.messaging is an array, but 
                 // will only ever contain one event, so we get index 0
                 let webhook_event = entry.messaging[0];
