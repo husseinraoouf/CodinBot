@@ -130,16 +130,18 @@ const start = async () => {
                 sessionId: sender_psid,
             });
     
-            apiaiRequest.on('response', function(response) {
+            apiaiRequest.on('response', async function(response) {
                 if (response.result.action == "querySyntax"){
-
-                    console.log(response);
+                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
+                    
+                    console.log(result);
+                    
                     response = {
                         "attachment":{
                             "type":"template",
                             "payload":{
                             "template_type":"button",
-                            "text":response.result.fulfillment.speech.split("+").join(" "),
+                            "text":result.difintion,
                             "buttons":[
                                 {
                                 "type":"web_url",
