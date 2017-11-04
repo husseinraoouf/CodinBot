@@ -132,6 +132,7 @@ const start = async () => {
     
             apiaiRequest.on('response', async function(response) {
                 if (response.result.action == "querySyntax"){
+                    typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                     
                     console.log(result);
@@ -146,7 +147,7 @@ const start = async () => {
                                 {
                                 "type":"web_url",
                                 "url": "https://codingbot.herokuapp.com/?language=" + response.result.parameters.language +"&keyword=" + response.result.parameters.keyword + "&keywordkind=" + response.result.parameters.keywordkind,
-                                "title": "The Answer",
+                                "title": "More Details",
                                 "webview_height_ratio": "tall"
                                 }
                             ]
@@ -158,6 +159,7 @@ const start = async () => {
     
                     // Send the response message
                     callSendMessageAPI(sender_psid, response, askForRate);
+                    typeOn(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
     
