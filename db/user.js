@@ -14,6 +14,8 @@ module.exports = ({ Users }, { userByID }) => {
       );
 
       console.log(response);
+
+      return response;
   }
 
     

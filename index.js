@@ -237,14 +237,14 @@ const start = async () => {
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
-            }, (err, res, body) => {
+            }, async (err, res, body) => {
                 if (!err) {
-                    console.log(body);
-                    DB.userDB.adduser(sender_psid, body.first_name);                    
+                    console.log(body.first_name);
+                    await DB.userDB.adduser(sender_psid, body.first_name);                    
                     sendText(sender_psid, "ًWelcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
                     
                     const response = {
-                        "text": "Please tell me what programming language you want to know \u000A unfortunately we only support Html and Css for now But we want to expand to other language in the future",
+                        "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
                         "quick_replies": [
                             {
                                 "content_type": "text",
