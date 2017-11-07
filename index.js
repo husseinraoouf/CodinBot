@@ -235,16 +235,14 @@ const start = async () => {
 
             request({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
-                "qs": { "fields": "first_name",
-                        "access_token": FB_PAGE_ACCESS_TOKEN 
-                },
+                "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
             }, async (err, res, body) => {
                 if (!err) {
-                    console.log(body.first_name);
-
-                    await DB.userDB.adduser(sender_psid, body.first_name);                    
-                    sendText(sender_psid, "ًWelcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
+                    const us = JSON.parse(body);
+                    console.log(us);
+                    await DB.userDB.adduser(sender_psid, us.first_name);                    
+                    sendText(sender_psid, "ًWelcome " + us.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
                     
                     const response = {
                         "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
