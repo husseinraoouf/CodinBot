@@ -235,11 +235,14 @@ const start = async () => {
 
             request({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
-                "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
+                "qs": { "fields": "first_name",
+                        "access_token": FB_PAGE_ACCESS_TOKEN 
+                },
                 "method": "GET",
             }, async (err, res, body) => {
                 if (!err) {
                     console.log(body.first_name);
+
                     await DB.userDB.adduser(sender_psid, body.first_name);                    
                     sendText(sender_psid, "ًWelcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
                     
