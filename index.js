@@ -240,8 +240,8 @@ const start = async () => {
             }, (err, res, body) => {
                 if (!err) {
                     console.log(body);
-
-                    sendText(sender_psid, "ًWelcome I'am CodingBot, And I'am here To help you in coding");
+                    DB.userDB.adduser(sender_psid, body.first_name);                    
+                    sendText(sender_psid, "ًWelcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
                     
                     const response = {
                         "text": "Please tell me what programming language you want to know \u000A unfortunately we only support Html and Css for now But we want to expand to other language in the future",
