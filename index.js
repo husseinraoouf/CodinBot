@@ -232,7 +232,29 @@ const start = async () => {
     
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
-            sendText(sender_psid, "Welcome");
+            sendText(sender_psid, "ًWelcome I'am CodingBot, And I'am here To help you in coding");
+
+            const response = {
+                "text": "Please tell me what programming language you want to know \u000A unfortunately we only support Html and Css for now But we want to expand to other language in the future",
+                "quick_replies": [
+                    {
+                        "content_type": "text",
+                        "title": "html",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "css",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "suggest a new language",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    }
+                ]
+            }
+            callSendMessageAPI(sender_psid, response);
         } else if (payload === 'yes') {
             sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {

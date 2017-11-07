@@ -1,0 +1,25 @@
+curl -X POST -H "Content-Type: application/json" -d '{
+  "greeting":[
+    {
+      "locale":"default",
+      "text":"Hello {{user_first_name}}!"
+    }, {
+      "locale":"en_US",
+      "text":"Improve your coding skills."
+    }
+  ] 
+}' "https://graph.facebook.com/v2.6/me/messenger_profile?access_token=EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC"
+
+
+
+
+
+curl -X POST -H "Content-Type: application/json" -d '{
+"setting_type":"call_to_actions",
+"thread_state":"new_thread",
+"call_to_actions":[
+ {
+  "payload":"getstarted"
+ }
+]
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC"
