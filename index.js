@@ -196,6 +196,7 @@ const start = async () => {
                     console.log(JSON.stringify(re));
                     var ty = re[0]
                     for (var i = 1; i <= re.length; i++) {
+                        console.log(re[i]);
                         if (re[i].length == 0) {
                             continue;
                         }
