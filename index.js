@@ -160,6 +160,25 @@ const start = async () => {
                     // Send the response message
                     callSendMessageAPI(sender_psid, response, askForRate);
                     typeOn(sender_psid);
+                } else if (response.result.action == "queryAttribute"){
+                    typeOn(sender_psid);
+                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
+                    
+                    console.log(result);
+                    
+                    if (result.attributes.length == 0) {
+                        sendText(sender_psid, "It have only the global attributes");
+                    } else {
+                        var re = result.attributes[0].name;
+                        
+                        for (var i = 1; i < result.attributes.length; i++) {
+                            re += "\u000A" + result.attributes[i].name;
+                        }
+                        
+                        sendText(sender_psid, re);
+                        
+                    }
+                    typeOn(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
     
@@ -242,7 +261,7 @@ const start = async () => {
                     const us = JSON.parse(body);
                     console.log(us);
                     await DB.userDB.adduser(sender_psid, us.first_name);                    
-                    sendText(sender_psid, "ًWelcome " + us.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
+                    sendText(sender_psid, "Welcome " + us.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
                     
                     const response = {
                         "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
