@@ -191,11 +191,15 @@ const start = async () => {
                         }
                     }
                     
-                    re = re.split("\\n");
+                    re = re.split(" ");
 
                     console.log(JSON.stringify(re));
                     var ty = re[0]
                     for (var i = 1; i <= re.length; i++) {
+                        if (re[i].length == 0) {
+                            continue;
+                        }
+
                         if (i = re.length && ty.length > 0) {
                             sendText(sender_psid, ty);                            
                         } else if (re[i].length + ty.length + 1 <= 640) {
