@@ -160,9 +160,7 @@ const start = async () => {
                     typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
-                    
-                    console.log(result);
-                    
+                                        
                     if (result.attributes.length == 0) {
                         sendText(sender_psid, "It have only the global attributes");
                     } else {
@@ -186,6 +184,7 @@ const start = async () => {
                     var re = "";
                     
                     for (var i = 0; i < result.attributes.length; i++) {
+                        console.log(result.attributes[i].name, )
                         if(result.attributes[i].name == response.result.parameters.attributeName) {
                             re = result.attributes[i].detail.replace(/\\n/g, '\u000A');
                             break;

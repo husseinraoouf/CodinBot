@@ -13,13 +13,9 @@ module.exports = ({ Keywords, Users }) => {
 
 
     methods.getKeyword = async ({ language, keyword, keywordkind }) => {
-        console.log (language, keyword, keywordkind);
-
         const response = await Keywords.findOne(
             { keyword, language, keywordkind }
         );
-
-        console.log(response);
 
         return response;
     }
