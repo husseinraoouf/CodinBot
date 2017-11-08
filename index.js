@@ -325,39 +325,42 @@ const start = async () => {
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
 
-            await rp({
+            request({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
                 json: true,
-            }).then( async (body) => {
-                console.log(body);
-                await DB.userDB.adduser(sender_psid, body.first_name);                    
-                sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
-                
-                const response = {
-                    "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
-                    "quick_replies": [
-                        {
-                            "content_type": "text",
-                            "title": "html",
-                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-                        },
-                        {
-                            "content_type": "text",
-                            "title": "css",
-                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                        },
-                        {
-                            "content_type": "text",
-                            "title": "suggest a new language",
-                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                        }
-                    ]
+            }, function (err, res, body) {
+
+                if (err) {
+                    console.error("Unable to get profile:" + err);
+                } else {
+                    console.log(body);
+                    DB.userDB.adduser(sender_psid, body.first_name);                    
+                    sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
+                    
+                    const response = {
+                        "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
+                        "quick_replies": [
+                            {
+                                "content_type": "text",
+                                "title": "html",
+                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                            },
+                            {
+                                "content_type": "text",
+                                "title": "css",
+                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                            },
+                            {
+                                "content_type": "text",
+                                "title": "suggest a new language",
+                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                            }
+                        ]
+                    }
+                    callSendMessageAPI(sender_psid, response);
                 }
-                callSendMessageAPI(sender_psid, response);
-            }).catch( (err) => {
-                console.error("Unable to get profile:" + err);
             }); 
         } else if (payload === 'yes') {
             sendText(sender_psid, "Thanks!");
@@ -408,18 +411,20 @@ const start = async () => {
     async function callSendAPI(request_body, sender_psid, cb) {
 
         // Send the HTTP request to the Messenger Platform
-        await rp({
+        request({
             "uri": "https://graph.facebook.com/v2.6/me/messages",
             "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
             "method": "POST",
             "json": request_body
-        }).then( (body) => {
-            console.log('message sent!')
-
-            if (cb) cb(sender_psid);
-        }) .catch( (err) => {
-            console.error("Unable to send message:" + err);
-        }); 
+        } , function(err, res, body) {
+            if (err) {
+               console.error("Unable to send message:" + err);        
+            } else {
+                console.log('message sent!');
+                if (cb) cb(sender_psid);
+            }
+            
+        });
 
     }
     
