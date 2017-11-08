@@ -236,11 +236,9 @@ const start = async () => {
                             
                                 console.log(te);
 
-                                sendText(sender_psid, te);
+                                sendText(sender_psid, te, callback);
 
                             }
-                        
-                            callback();
                         }, function(err) {
                             // if any of the file processing produced an error, err would equal that error
                             if( err ) {
@@ -425,14 +423,14 @@ const start = async () => {
 
     }
     
-    async function sendText(sender_psid, text) {
+    async function sendText(sender_psid, text, cb) {
     
         const response = {
             text,
         }
     
         // Send the response message
-        callSendMessageAPI(sender_psid, response);
+        callSendMessageAPI(sender_psid, response, cb);
     }
     
     
