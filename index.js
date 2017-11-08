@@ -131,6 +131,7 @@ const start = async () => {
             });
     
             apiaiRequest.on('response', async function(response) {
+                console.log(response.result.parameters);                
                 if (response.result.action == "querySyntax"){
                     typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
@@ -162,8 +163,6 @@ const start = async () => {
                     typeOn(sender_psid);
                 } else if (response.result.action == "queryAttribute"){
                     typeOn(sender_psid);
-
-                    console.log(response.result.parameters);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                     
