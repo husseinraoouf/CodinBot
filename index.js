@@ -198,7 +198,7 @@ const start = async () => {
                             continue;
                         }
 
-                        console.log(re[i];
+                        console.log(re[i]);
 
                         sendText(sender_psid, re[i]);
                     }
