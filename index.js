@@ -9,6 +9,7 @@ const
     apiai = require('apiai'),
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"}),
     cheerio = require("cheerio"),
+    async = require("async"),
     connectDB = require('./db');
 
 const start = async () => {
@@ -192,16 +193,29 @@ const start = async () => {
                     }
                     
                     re = re.split("\\n");
-                    for (var i = 0; i < re.length; i++) {
+
+                    async.each(re, function(te, callback) {
                         
-                        if (re[i].length == 0) {
-                            continue;
+                            if (te.length != 0) {
+                            
+                                console.log(te);
+
+                                sendText(sender_psid, te);
+
+                            }
+                        
+                        }, function(err) {
+                            // if any of the file processing produced an error, err would equal that error
+                            if( err ) {
+                              // One of the iterations produced an error.
+                              // All processing will now stop.
+                              console.log('A file failed to process');
+                            } else {
+                              console.log('All files have been processed successfully');
+                            }
                         }
-
-                        console.log(re[i]);
-
-                        sendText(sender_psid, re[i]);
-                    }
+                    );
+                    
                     typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
