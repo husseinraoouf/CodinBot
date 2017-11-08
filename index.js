@@ -191,28 +191,14 @@ const start = async () => {
                         }
                     }
                     
-                    re = re.replace(/\\n/g, '\u000A').split(" ");
-
-                    var ty = re[0];
-                    for (var i = 1; i <= re.length; i++) {
+                    re = re.split("\\n");
+                    for (var i = 1; i < re.length; i++) {
                         
                         if (re[i].length == 0) {
                             continue;
                         }
 
-                        console.log(re[i], i, re.length, ty.length);
-
-
-                        if (i == re.length && ty.length > 0) {
-                            sendText(sender_psid, ty);
-                        } else if (i == re.length && ty.length > 0) {
-                            continue;
-                        } else if (re[i].length + ty.length + 1 <= 640) {
-                            ty += " " + re[i];
-                        } else {
-                            sendText(sender_psid, ty);
-                            ty = re[i];
-                        }
+                        sendText(sender_psid, re[i]);
                     }
                     typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
