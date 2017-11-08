@@ -126,23 +126,23 @@ const start = async () => {
                 }
             );
 
-            body.entry.forEach(function(entry) {
-                console.log(JSON.stringify(entry));
-                // Get the webhook event. entry.messaging is an array, but 
-                // will only ever contain one event, so we get index 0
-                let webhook_event = entry.messaging[0];
+            // body.entry.forEach(function(entry) {
+            //     console.log(JSON.stringify(entry));
+            //     // Get the webhook event. entry.messaging is an array, but 
+            //     // will only ever contain one event, so we get index 0
+            //     let webhook_event = entry.messaging[0];
                
-                // Get the sender PSID
-                let sender_psid = webhook_event.sender.id;
+            //     // Get the sender PSID
+            //     let sender_psid = webhook_event.sender.id;
     
-                // Check if the event is a message or postback and
-                // pass the event to the appropriate handler function
-                if (webhook_event.message) {
-                    await handleMessage(sender_psid, webhook_event.message);        
-                } else if (webhook_event.postback) {
-                    await handlePostback(sender_psid, webhook_event.postback);
-                }
-            });
+            //     // Check if the event is a message or postback and
+            //     // pass the event to the appropriate handler function
+            //     if (webhook_event.message) {
+            //         await handleMessage(sender_psid, webhook_event.message);        
+            //     } else if (webhook_event.postback) {
+            //         await handlePostback(sender_psid, webhook_event.postback);
+            //     }
+            // });
     
             // Return a '200 OK' response to all events
             res.status(200).send('EVENT_RECEIVED');
