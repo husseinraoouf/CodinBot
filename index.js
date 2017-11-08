@@ -186,12 +186,25 @@ const start = async () => {
                     for (var i = 0; i < result.attributes.length; i++) {
                         console.log(result.attributes[i].name)
                         if(result.attributes[i].name == response.result.parameters.attributeName) {
-                            re = result.attributes[i].detail.replace(/\\n/g, '\u000A');
+                            re = result.attributes[i].detail;
                             break;
                         }
                     }
                     
-                    sendText(sender_psid, re);
+                    re.split("\\n");
+
+                    console.log(JSON.stringify(re));
+                    var ty = re[0]
+                    for (var i = 1; i <= re.length; i++) {
+                        if (i = re.length && ty.length > 0) {
+                            sendText(sender_psid, ty);                            
+                        } else if (re[i].length + ty.length + 1 <= 640) {
+                            ty += "\u000A" + re[i];
+                        } else {
+                            sendText(sender_psid, ty);
+                            ty = re[i];
+                        }
+                    }
                     typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
