@@ -91,6 +91,41 @@ const start = async () => {
         if (body.object === 'page') {
     
             // Iterate over each entry - there may be multiple if batched
+
+
+            async.each(body.entry, function(entry, callback) {
+                
+
+                    console.log(JSON.stringify(entry));
+                    // Get the webhook event. entry.messaging is an array, but 
+                    // will only ever contain one event, so we get index 0
+                    let webhook_event = entry.messaging[0];
+                
+                    // Get the sender PSID
+                    let sender_psid = webhook_event.sender.id;
+        
+                    // Check if the event is a message or postback and
+                    // pass the event to the appropriate handler function
+                    if (webhook_event.message) {
+                        handleMessage(sender_psid, webhook_event.message);        
+                    } else if (webhook_event.postback) {
+                        handlePostback(sender_psid, webhook_event.postback);
+                    }
+
+                    callback()
+                    
+                }, function(err) {
+                    // if any of the file processing produced an error, err would equal that error
+                    if( err ) {
+                      // One of the iterations produced an error.
+                      // All processing will now stop.
+                      console.log('A file failed to process');
+                    } else {
+                      console.log('All files have been processed successfully');
+                    }
+                }
+            );
+
             body.entry.forEach(function(entry) {
                 console.log(JSON.stringify(entry));
                 // Get the webhook event. entry.messaging is an array, but 
@@ -195,16 +230,17 @@ const start = async () => {
                     
                     re = re.split("\\n");
 
-                    async.each(re, async function(te, callback) {
+                    async.each(re, function(te, callback) {
                         
                             if (te.length != 0) {
                             
                                 console.log(te);
 
-                                await sendText(sender_psid, te);
+                                sendText(sender_psid, te);
 
                             }
                         
+                            callback();
                         }, function(err) {
                             // if any of the file processing produced an error, err would equal that error
                             if( err ) {
