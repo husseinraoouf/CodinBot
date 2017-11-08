@@ -192,11 +192,13 @@ const start = async () => {
                     }
                     
                     re = re.split("\\n");
-                    for (var i = 1; i < re.length; i++) {
+                    for (var i = 0; i < re.length; i++) {
                         
                         if (re[i].length == 0) {
                             continue;
                         }
+
+                        console.log(re[i];
 
                         sendText(sender_psid, re[i]);
                     }
