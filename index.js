@@ -191,7 +191,7 @@ const start = async () => {
                         }
                     }
                     
-                    re.split("\\n");
+                    re = re.split("\\n");
 
                     console.log(JSON.stringify(re));
                     var ty = re[0]
