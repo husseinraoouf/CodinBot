@@ -10,7 +10,7 @@ const
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"}),
     cheerio = require("cheerio"),
     async = require("async"),
-    rp = require('request-promise');
+    rp = require('request-promise'),
     connectDB = require('./db');
 
 const start = async () => {
