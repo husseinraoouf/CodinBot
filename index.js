@@ -159,7 +159,7 @@ const start = async () => {
                     // Send the response message
                     callSendMessageAPI(sender_psid, response, askForRate);
                     typeOn(sender_psid);
-                } else if (response.result.action == "queryAttribute"){
+                } else if (response.result.action == "listAttributes"){
                     typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
@@ -178,7 +178,25 @@ const start = async () => {
                         sendText(sender_psid, re);
                         
                     }
+                    typeOff(sender_psid);
+                } else if (response.result.action == "queryAttribute"){
                     typeOn(sender_psid);
+
+                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
+                    
+                
+                    var re = "there is no attribute with that name";
+                    
+                    for (var i = 0; i < result.attributes.length; i++) {
+                        if(result.attributes[i].name == response.result.parameters.attributeName) {
+                            re = result.attributes[i].detail;
+                            break;
+                        }
+                    }
+                    
+                    sendText(sender_psid, re);
+                        
+                    typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
     
