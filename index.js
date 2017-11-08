@@ -10,6 +10,7 @@ const
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"}),
     cheerio = require("cheerio"),
     async = require("async"),
+    rp = require('request-promise');
     connectDB = require('./db');
 
 const start = async () => {
@@ -81,7 +82,7 @@ const start = async () => {
     });
     
     // Creates the endpoint for our webhook
-    app.post('/webhook', (req, res) => {  
+    app.post('/webhook', async (req, res) => {  
     
         // Parse the request body from the POST
         let body = req.body;
@@ -102,9 +103,9 @@ const start = async () => {
                 // Check if the event is a message or postback and
                 // pass the event to the appropriate handler function
                 if (webhook_event.message) {
-                    handleMessage(sender_psid, webhook_event.message);        
+                    await handleMessage(sender_psid, webhook_event.message);        
                 } else if (webhook_event.postback) {
-                    handlePostback(sender_psid, webhook_event.postback);
+                    await handlePostback(sender_psid, webhook_event.postback);
                 }
             });
     
@@ -119,7 +120,7 @@ const start = async () => {
     });
 
 
-    function handleMessage(sender_psid, received_message) {
+    async function handleMessage(sender_psid, received_message) {
         let response;
     
         // Checks if the message contains text
@@ -133,7 +134,7 @@ const start = async () => {
     
             apiaiRequest.on('response', async function(response) {
                 if (response.result.action == "querySyntax"){
-                    typeOn(sender_psid);
+                    await typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                                         
                     response = {
@@ -155,15 +156,15 @@ const start = async () => {
                     }
     
                     // Send the response message
-                    callSendMessageAPI(sender_psid, response, askForRate);
-                    typeOn(sender_psid);
+                    await callSendMessageAPI(sender_psid, response, askForRate);
+                    await typeOn(sender_psid);
                 } else if (response.result.action == "listAttributes"){
-                    typeOn(sender_psid);
+                    await typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                                         
                     if (result.attributes.length == 0) {
-                        sendText(sender_psid, "It have only the global attributes");
+                        await sendText(sender_psid, "It have only the global attributes");
                     } else {
                         var re = result.attributes[0].name;
                         
@@ -171,13 +172,13 @@ const start = async () => {
                             re += "\u000A" + result.attributes[i].name;
                         }
                         
-                        sendText(sender_psid, re);
+                        await sendText(sender_psid, re);
                         
                     }
-                    typeOff(sender_psid);
+                    await typeOff(sender_psid);
                 } else if (response.result.action == "queryAttribute"){
                     console.log(response.result.parameters);                            
-                    typeOn(sender_psid);
+                    await typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                     
@@ -194,13 +195,13 @@ const start = async () => {
                     
                     re = re.split("\\n");
 
-                    async.each(re, function(te, callback) {
+                    async.each(re, async function(te, callback) {
                         
                             if (te.length != 0) {
                             
                                 console.log(te);
 
-                                sendText(sender_psid, te);
+                                await sendText(sender_psid, te);
 
                             }
                         
@@ -216,21 +217,21 @@ const start = async () => {
                         }
                     );
                     
-                    typeOff(sender_psid);
+                    await typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
     
                     console.log(rate);
                     if (rate >= 1 && rate <= 5) {
-                        DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, response.result.parameters.keywordkind, rate);
-                        sendText(sender_psid, "Thank you");
+                        await DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, response.result.parameters.keywordkind, rate);
+                        await sendText(sender_psid, "Thank you");
                     } else {
-                        sendText(sender_psid, "Please rate between 1 and 5");                    
-                        askForRate(sender_psid);
+                        await sendText(sender_psid, "Please rate between 1 and 5");                    
+                        await askForRate(sender_psid);
                     }
                 } else {
                     // Send the response message
-                    sendText(sender_psid, response.result.fulfillment.speech);
+                    await sendText(sender_psid, response.result.fulfillment.speech);
                 }
             });
     
@@ -277,12 +278,12 @@ const start = async () => {
             }
     
             // Send the response message
-            callSendMessageAPI(sender_psid, response);
+            await callSendMessageAPI(sender_psid, response);
         }    
     }
     
     
-    function handlePostback(sender_psid, received_postback) {
+    async function handlePostback(sender_psid, received_postback) {
             
         // Get the payload for the postback
         let payload = received_postback.payload;
@@ -290,42 +291,39 @@ const start = async () => {
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
 
-            request({
+            await rp({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
-            }, async (err, res, body) => {
-                if (!err) {
-                    const us = JSON.parse(body);
-                    console.log(us);
-                    await DB.userDB.adduser(sender_psid, us.first_name);                    
-                    sendText(sender_psid, "Welcome " + us.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
-                    
-                    const response = {
-                        "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
-                        "quick_replies": [
-                            {
-                                "content_type": "text",
-                                "title": "html",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-                            },
-                            {
-                                "content_type": "text",
-                                "title": "css",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                            },
-                            {
-                                "content_type": "text",
-                                "title": "suggest a new language",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                            }
-                        ]
-                    }
-                    callSendMessageAPI(sender_psid, response);
-
-                } else {
-                    console.error("Unable to get profile:" + err);
+                json: true,
+            }).then( async (body) => {
+                console.log(body);
+                await DB.userDB.adduser(sender_psid, body.first_name);                    
+                sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
+                
+                const response = {
+                    "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
+                    "quick_replies": [
+                        {
+                            "content_type": "text",
+                            "title": "html",
+                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                        },
+                        {
+                            "content_type": "text",
+                            "title": "css",
+                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                        },
+                        {
+                            "content_type": "text",
+                            "title": "suggest a new language",
+                            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                        }
+                    ]
                 }
+                callSendMessageAPI(sender_psid, response);
+            }).catch( (err) => {
+                console.error("Unable to get profile:" + err);
             }); 
         } else if (payload === 'yes') {
             sendText(sender_psid, "Thanks!");
@@ -335,7 +333,7 @@ const start = async () => {
     }
     
 
-    function typeOn(sender_psid) {
+    async function typeOn(sender_psid) {
         
         let request_body = {
             "recipient": {
@@ -347,7 +345,7 @@ const start = async () => {
         callSendAPI(request_body, sender_psid);
     }
     
-    function typeOff(sender_psid) {
+    async function typeOff(sender_psid) {
         
         let request_body = {
             "recipient": {
@@ -361,7 +359,7 @@ const start = async () => {
     }
 
 
-    function callSendMessageAPI(sender_psid, response, cb) {
+    async function callSendMessageAPI(sender_psid, response, cb) {
         // Construct the message body
         let request_body = {
             "recipient": {
@@ -373,26 +371,25 @@ const start = async () => {
         callSendAPI(request_body, sender_psid, cb);
     }
 
-    function callSendAPI(request_body, sender_psid, cb) {
+    async function callSendAPI(request_body, sender_psid, cb) {
 
         // Send the HTTP request to the Messenger Platform
-        request({
+        await rp({
             "uri": "https://graph.facebook.com/v2.6/me/messages",
             "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
             "method": "POST",
             "json": request_body
-        }, (err, res, body) => {
-            if (!err) {
-                console.log('message sent!')
-            } else {
-                console.error("Unable to send message:" + err);
-            }
+        }).then( (body) => {
+            console.log('message sent!')
+
             if (cb) cb(sender_psid);
+        }) .catch( (err) => {
+            console.error("Unable to send message:" + err);
         }); 
 
     }
     
-    function sendText(sender_psid, text) {
+    async function sendText(sender_psid, text) {
     
         const response = {
             text,
@@ -403,7 +400,7 @@ const start = async () => {
     }
     
     
-    function askForRate(sender_psid) {
+    async function askForRate(sender_psid) {
         const response = {
             "text": "Please Rate",
             "quick_replies": [
