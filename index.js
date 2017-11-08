@@ -184,7 +184,7 @@ const start = async () => {
                     var re = "";
                     
                     for (var i = 0; i < result.attributes.length; i++) {
-                        console.log(result.attributes[i].name, )
+                        console.log(result.attributes[i].name)
                         if(result.attributes[i].name == response.result.parameters.attributeName) {
                             re = result.attributes[i].detail.replace(/\\n/g, '\u000A');
                             break;
