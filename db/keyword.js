@@ -9,8 +9,6 @@ module.exports = ({ Keywords, Users }) => {
             { keyword, language, keywordkind },
             { $set: { rating: rate }, $inc: { numrated: 1 } }
         );
-
-        console.log(response);
     }
 
 

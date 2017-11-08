@@ -131,7 +131,6 @@ const start = async () => {
             });
     
             apiaiRequest.on('response', async function(response) {
-                console.log(response);                
                 if (response.result.action == "querySyntax"){
                     typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
@@ -153,8 +152,6 @@ const start = async () => {
                             }
                         }
                     }
-
-                    console.log(response);                    
     
                     // Send the response message
                     callSendMessageAPI(sender_psid, response, askForRate);
@@ -180,22 +177,22 @@ const start = async () => {
                     }
                     typeOff(sender_psid);
                 } else if (response.result.action == "queryAttribute"){
+                    console.log(response.result.parameters);                            
                     typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                     
                 
-                    var re = "there is no attribute with that name";
+                    var re = "";
                     
                     for (var i = 0; i < result.attributes.length; i++) {
                         if(result.attributes[i].name == response.result.parameters.attributeName) {
-                            re = result.attributes[i].detail;
+                            re = result.attributes[i].detail.replace(/\\n/g, '\u000A');
                             break;
                         }
                     }
                     
                     sendText(sender_psid, re);
-                        
                     typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
