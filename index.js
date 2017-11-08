@@ -191,7 +191,7 @@ const start = async () => {
                         }
                     }
                     
-                    re = re.split(" ");
+                    re = re.replace(/\\n/g, '\u000A').split(" ");
 
                     var ty = re[0];
                     for (var i = 1; i <= re.length; i++) {
@@ -205,8 +205,10 @@ const start = async () => {
 
                         if (i == re.length && ty.length > 0) {
                             sendText(sender_psid, ty);
+                        } else if (i == re.length && ty.length > 0) {
+                            continue;
                         } else if (re[i].length + ty.length + 1 <= 640) {
-                            ty += "\u000A" + re[i];
+                            ty += " " + re[i];
                         } else {
                             sendText(sender_psid, ty);
                             ty = re[i];
