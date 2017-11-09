@@ -196,6 +196,7 @@ const start = async () => {
                     re = re.split("\\n");
 
                     for (var i in re) {
+                        console.log(re[i].length);
                         if (re[i].length != 0) {
                             console.log(re[i]);
                             await sendText(sender_psid, re[i]);
