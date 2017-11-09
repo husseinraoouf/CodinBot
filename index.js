@@ -80,7 +80,7 @@ const start = async () => {
     });
     
     // Creates the endpoint for our webhook
-    app.post('/webhook', async (req, res) => {  
+    app.post('/webhook', (req, res) => {  
     
         // Parse the request body from the POST
         let body = req.body;
@@ -157,7 +157,7 @@ const start = async () => {
                     // Send the response message
                     await callSendMessageAPI(sender_psid, response);
                     await askForRate(sender_psid);
-                    await typeOn(sender_psid);
+                    await typeOff(sender_psid);
                 } else if (response.result.action == "listAttributes"){
                     await typeOn(sender_psid);
 
@@ -276,7 +276,7 @@ const start = async () => {
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
 
-            rp({
+            await rp({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
@@ -357,7 +357,7 @@ const start = async () => {
     async function callSendAPI(request_body, sender_psid) {
 
         // Send the HTTP request to the Messenger Platform
-        rp({
+        await rp({
             "uri": "https://graph.facebook.com/v2.6/me/messages",
             "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
             "method": "POST",
