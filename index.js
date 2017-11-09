@@ -6,7 +6,7 @@ const
     express = require('express'),
     bodyParser = require('body-parser'),
     apiai = require('apiai'),
-    cheerio = require("cheerio")
+    cheerio = require("cheerio"),
     rp = require('request-promise-native'),
     connectDB = require('./db'),
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"});
