@@ -2,16 +2,14 @@
 
 // Imports dependencies and set up http server
 const
-    { FB_PAGE_ACCESS_TOKEN, APIAI_CLIENT} = require("./lib/consts"),
+    { FB_PAGE_ACCESS_TOKEN, APIAI_CLIENT } = require("./lib/consts"),
     express = require('express'),
     bodyParser = require('body-parser'),
-    request = require('request'),
     apiai = require('apiai'),
-    apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"}),
-    cheerio = require("cheerio"),
-    async = require("async"),
-    rp = require('request-promise'),
-    connectDB = require('./db');
+    cheerio = require("cheerio")
+    rp = require('request-promise-native'),
+    connectDB = require('./db'),
+    apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"});
 
 const start = async () => {
     // 3
@@ -91,58 +89,24 @@ const start = async () => {
         if (body.object === 'page') {
     
             // Iterate over each entry - there may be multiple if batched
-
-
-            async.each(body.entry, function(entry, callback) {
-                
-
-                    console.log(JSON.stringify(entry));
-                    // Get the webhook event. entry.messaging is an array, but 
-                    // will only ever contain one event, so we get index 0
-                    let webhook_event = entry.messaging[0];
-                
-                    // Get the sender PSID
-                    let sender_psid = webhook_event.sender.id;
-        
-                    // Check if the event is a message or postback and
-                    // pass the event to the appropriate handler function
-                    if (webhook_event.message) {
-                        handleMessage(sender_psid, webhook_event.message);        
-                    } else if (webhook_event.postback) {
-                        handlePostback(sender_psid, webhook_event.postback);
-                    }
-
-                    callback()
-                    
-                }, function(err) {
-                    // if any of the file processing produced an error, err would equal that error
-                    if( err ) {
-                      // One of the iterations produced an error.
-                      // All processing will now stop.
-                      console.log('A file failed to process');
-                    } else {
-                      console.log('All files have been processed successfully');
-                    }
+            for (var i in body.entry) {
+                // Gets the body of the webhook event
+                let webhook_event = body.entry[i].messaging[0];
+                console.log(webhook_event);
+            
+            
+                // Get the sender PSID
+                let sender_psid = webhook_event.sender.id;
+                console.log('Sender PSID: ' + sender_psid);
+            
+                // Check if the event is a message or postback and
+                // pass the event to the appropriate handler function
+                if (webhook_event.message) {
+                    handleMessage(sender_psid, webhook_event.message);        
+                } else if (webhook_event.postback) {
+                    handlePostback(sender_psid, webhook_event.postback);
                 }
-            );
-
-            // body.entry.forEach(function(entry) {
-            //     console.log(JSON.stringify(entry));
-            //     // Get the webhook event. entry.messaging is an array, but 
-            //     // will only ever contain one event, so we get index 0
-            //     let webhook_event = entry.messaging[0];
-               
-            //     // Get the sender PSID
-            //     let sender_psid = webhook_event.sender.id;
-    
-            //     // Check if the event is a message or postback and
-            //     // pass the event to the appropriate handler function
-            //     if (webhook_event.message) {
-            //         await handleMessage(sender_psid, webhook_event.message);        
-            //     } else if (webhook_event.postback) {
-            //         await handlePostback(sender_psid, webhook_event.postback);
-            //     }
-            // });
+            }
     
             // Return a '200 OK' response to all events
             res.status(200).send('EVENT_RECEIVED');
@@ -177,7 +141,7 @@ const start = async () => {
                             "type":"template",
                             "payload":{
                             "template_type":"button",
-                            "text":result.difintion,
+                            "text": result.difintion,
                             "buttons":[
                                 {
                                 "type":"web_url",
@@ -191,7 +155,8 @@ const start = async () => {
                     }
     
                     // Send the response message
-                    await callSendMessageAPI(sender_psid, response, askForRate);
+                    await callSendMessageAPI(sender_psid, response);
+                    await askForRate(sender_psid);
                     await typeOn(sender_psid);
                 } else if (response.result.action == "listAttributes"){
                     await typeOn(sender_psid);
@@ -230,27 +195,13 @@ const start = async () => {
                     
                     re = re.split("\\n");
 
-                    async.each(re, function(te, callback) {
-                        
-                            if (te.length != 0) {
-                            
-                                console.log(te);
-
-                                sendText(sender_psid, te, callback);
-
-                            }
-                        }, function(err) {
-                            // if any of the file processing produced an error, err would equal that error
-                            if( err ) {
-                              // One of the iterations produced an error.
-                              // All processing will now stop.
-                              console.log('A file failed to process');
-                            } else {
-                              console.log('All files have been processed successfully');
-                            }
+                    for (var i in re) {
+                        if (te.length != 0) {
+                            console.log(re[i]);
+                            await sendText(sender_psid, re[i]);
                         }
-                    );
-                    
+                    }
+
                     await typeOff(sender_psid);
                 } else if (response.result.action == "rating") {
                     const rate = response.result.parameters.number;
@@ -325,47 +276,42 @@ const start = async () => {
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
 
-            request({
+            rp({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
                 json: true,
-            }, function (err, res, body) {
+            })
 
-                if (err) {
-                    console.error("Unable to get profile:" + err);
-                } else {
-                    console.log(body);
-                    DB.userDB.adduser(sender_psid, body.first_name);                    
-                    sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
-                    
-                    const response = {
-                        "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
-                        "quick_replies": [
-                            {
-                                "content_type": "text",
-                                "title": "html",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-                            },
-                            {
-                                "content_type": "text",
-                                "title": "css",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                            },
-                            {
-                                "content_type": "text",
-                                "title": "suggest a new language",
-                                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                            }
-                        ]
+            console.log(body);
+            await DB.userDB.adduser(sender_psid, body.first_name);                    
+            await sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
+            
+            const response = {
+                "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
+                "quick_replies": [
+                    {
+                        "content_type": "text",
+                        "title": "html",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "css",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                    },
+                    {
+                        "content_type": "text",
+                        "title": "suggest a new language",
+                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
                     }
-                    callSendMessageAPI(sender_psid, response);
-                }
-            }); 
+                ]
+            }
+            await callSendMessageAPI(sender_psid, response); 
         } else if (payload === 'yes') {
-            sendText(sender_psid, "Thanks!");
+            await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
-            sendText(sender_psid, "Oops, try sending another image.");
+            await sendText(sender_psid, "Oops, try sending another image.");
         }
     }
     
@@ -379,7 +325,7 @@ const start = async () => {
             "sender_action":"typing_on"
         }
     
-        callSendAPI(request_body, sender_psid);
+        await callSendAPI(request_body, sender_psid);
     }
     
     async function typeOff(sender_psid) {
@@ -391,12 +337,12 @@ const start = async () => {
             "sender_action":"typing_off"
         }
     
-        callSendAPI(request_body, sender_psid);
+        await callSendAPI(request_body, sender_psid);
     
     }
 
 
-    async function callSendMessageAPI(sender_psid, response, cb) {
+    async function callSendMessageAPI(sender_psid, response) {
         // Construct the message body
         let request_body = {
             "recipient": {
@@ -405,37 +351,30 @@ const start = async () => {
             "message": response
         }
     
-        callSendAPI(request_body, sender_psid, cb);
+        await callSendAPI(request_body, sender_psid);
     }
 
-    async function callSendAPI(request_body, sender_psid, cb) {
+    async function callSendAPI(request_body, sender_psid) {
 
         // Send the HTTP request to the Messenger Platform
-        request({
+        rp({
             "uri": "https://graph.facebook.com/v2.6/me/messages",
             "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
             "method": "POST",
             "json": request_body
-        } , function(err, res, body) {
-            if (err) {
-               console.error("Unable to send message:" + err);        
-            } else {
-                console.log('message sent!');
-                if (cb) cb(sender_psid);
-            }
-            
-        });
+        })
 
+        console.log('message sent!');
     }
     
-    async function sendText(sender_psid, text, cb) {
+    async function sendText(sender_psid, text) {
     
         const response = {
             text,
         }
     
         // Send the response message
-        callSendMessageAPI(sender_psid, response, cb);
+        await callSendMessageAPI(sender_psid, response);
     }
     
     
@@ -471,7 +410,7 @@ const start = async () => {
             ]
         }
     
-        callSendMessageAPI(sender_psid, response);
+        await callSendMessageAPI(sender_psid, response);
     
     }
 
