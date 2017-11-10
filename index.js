@@ -164,37 +164,34 @@ const start = async () => {
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
 
                     console.log(result);
-                    if(response.result.parameters.keywordkind == "htmlattribute") {
-                        
-                        await sendQuickReplies(sender_psid, "Please tell me in which tag.", qr, result.tags[i])
-
-                    } else {
-
-                        response = {
-                            "attachment":{
-                                "type":"template",
-                                "payload":{
-                                "template_type":"button",
-                                "text": result.difintion,
-                                "buttons":[
+                    response = {
+                        "attachment":{
+                            "type":"template",
+                            "payload":{
+                            "template_type":"button",
+                            "text": result.difintion,
+                            "buttons":[
                                     {
-                                    "type":"web_url",
-                                    "url": "https://codingbot.herokuapp.com/?language=" + response.result.parameters.language +"&keyword=" + response.result.parameters.keyword + "&keywordkind=" + response.result.parameters.keywordkind,
-                                    "title": "More Details",
-                                    "webview_height_ratio": "tall"
+                                        "type":"web_url",
+                                        "url": result.link,
+                                        "title": "More Details",
+                                        "webview_height_ratio": "tall"
+                                    },
+                                    {
+                                        "type":"postback",
+                                        "title": "examples",
+                                        "payload": "examples"
                                     }
                                 ]
-                                }
                             }
                         }
-
-                        // Send the response message
-                        await callSendMessageAPI(sender_psid, response);
-                        await askForRate(sender_psid);
                     }
 
+                    // Send the response message
+                    await callSendMessageAPI(sender_psid, response);
+                    await askForRate(sender_psid);
                     await typeOff(sender_psid);
-                } else if (response.result.action == "listAttributes"){
+                } else if (response.result.action == "listAttributesFromTag"){
                     await typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
@@ -318,7 +315,6 @@ const start = async () => {
                 json: true,
             })
 
-            console.log(body);
             await DB.userDB.adduser(sender_psid, body.first_name);                    
             await sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
             
