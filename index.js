@@ -121,9 +121,6 @@ const start = async () => {
 
     async function handleMessage(sender_psid, received_message) {
 
-        
-        let response;
-        
         if (received_message.quick_reply) {
         
             let payload = JSON.parse(received_message.quick_reply.payload);
@@ -247,8 +244,7 @@ const start = async () => {
                     await typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
 
-                    console.log(result);
-                    response = {
+                    var ourresponse = {
                         "attachment":{
                             "type":"template",
                             "payload":{
@@ -277,26 +273,8 @@ const start = async () => {
                     }
 
                     // Send the response message
-                    await callSendMessageAPI(sender_psid, response);
+                    await callSendMessageAPI(sender_psid, ourresponse);
                     await askForRate(sender_psid, response.result.parameters.keyword, response.result.parameters.language);
-                    await typeOff(sender_psid);
-                } else if (response.result.action == "listAttributesFromTag") {
-                    await typeOn(sender_psid);
-                    
-                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
-                                        
-                    if (result.attributes.length == 0) {
-                        await sendText(sender_psid, "It have only the global attributes");
-                    } else {
-                        var re = [];
-                        
-                        for (var i = 0; i < result.attributes.length; i++) {
-                            re.push(result.attributes[i].name);
-                        }
-                        
-                        await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
-                        
-                    }
                     await typeOff(sender_psid);
                 } else if (response.result.action == "queryAttribute"){
                     console.log(response.result.parameters);                            
