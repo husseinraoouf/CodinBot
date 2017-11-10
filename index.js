@@ -126,26 +126,110 @@ const start = async () => {
         
         if (received_message.quick_reply) {
         
-            var apiaiRequest = apiaiClient.textRequest(received_message.quick_reply.payload, {
-                sessionId: sender_psid,
-            });
+            let payload = JSON.parse(received_message.quick_reply.payload);
+            
+            if (payload.action == "setDefaultLang"){
+                await DB.userDB.setDefaultLang(sender_psid, payload.language);            
+                await sendText(sender_psid, "done");
+            } else if (payload.action == "rating") {
 
+                if (payload.rate >= 1 && payload.rate <= 5) {
+                    await DB.keywordDB.addrating(payload.language, payload.keyword, payload.rate);
+                    await sendText(sender_psid, "Thank you");
+                } else {
+                    await sendText(sender_psid, "Please rate between 1 and 5");                    
+                    await askForRate(sender_psid);
+                }
+            } else if (payload.action == "queryAttributeFromTag") {
+                
+                await typeOn(sender_psid);
+                
+                const result = await DB.keywordDB.getKeyword(payload.language, payload.keyword);
+                            
+                var re = "";
+                
+                for (var i = 0; i < result.attributes.length; i++) {
+                    console.log(result.attributes[i].name)
+                    if(result.attributes[i].name == payload.attribute) {
+                        re = result.attributes[i].detail;
+                        break;
+                    }
+                }
+                
+                re = re.split("\\n");
 
-            apiaiRequest.on('response', async function(response) {
-                if (response.result.action == "setDefaultLang"){
-                    await DB.userDB.setDefaultLang(sender_psid, response.result.parameters.language);            
-                    await sendText(sender_psid, "done");
+                for (var i in re) {
+                    if (re[i].length > 1) {
+                        await sendText(sender_psid, re[i]);
+                    }
                 }
 
-            });
+                await typeOff(sender_psid);
 
+            } else if (payload.action == "listAttributeFromTag") {
+                
+                await typeOn(sender_psid);
+                
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
+                                                
+                if (result.attributes.length - startAt <= 11) {
+    
+                    let response = {
+                        "text": "Choose Attribute You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = startAt; i < result.attributes.length; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.attributes[i].name,
+                            "payload": JSON.stringify({
+                                action: "queryAttributeFromTag",
+                                language: "html",
+                                keyword: payload,
+                                attribute: result.attributes[i].name
+                            })
+                        });
+                    }
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                    
+                } else if (result.attributes.length - startAt > 11) {
+                    let response = {
+                        "text": "Choose Attribute You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = startAt; i < startAt + 10; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.attributes[i].name,
+                            "payload": JSON.stringify({
+                                action: "queryAttributeFromTag",
+                                language: "html",
+                                keyword: payload,
+                                attribute: result.attributes[i].name
+                            })
+                        });
+                    }
+    
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": "more",
+                        "payload": JSON.stringify({
+                            action: "listAttributeFromTag",
+                            language: payload.language,
+                            keyword: payload.keyword,
+                            startAt: startAt+10,
+                        })
+                    });
+    
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                }
+            }
 
-            apiaiRequest.on('error', function(error) {
-                console.log(error);
-            });
-             
-            apiaiRequest.end();
-
+            
         }
             // Checks if the message contains text
         else if (received_message.text) {
@@ -194,7 +278,7 @@ const start = async () => {
 
                     // Send the response message
                     await callSendMessageAPI(sender_psid, response);
-                    await askForRate(sender_psid);
+                    await askForRate(sender_psid, response.result.parameters.keyword, response.result.parameters.language);
                     await typeOff(sender_psid);
                 } else if (response.result.action == "listAttributesFromTag") {
                     await typeOn(sender_psid);
@@ -240,17 +324,6 @@ const start = async () => {
                     }
 
                     await typeOff(sender_psid);
-                } else if (response.result.action == "rating") {
-                    const rate = response.result.parameters.number;
-    
-                    console.log(rate);
-                    if (rate >= 1 && rate <= 5) {
-                        await DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, rate);
-                        await sendText(sender_psid, "Thank you");
-                    } else {
-                        await sendText(sender_psid, "Please rate between 1 and 5");                    
-                        await askForRate(sender_psid);
-                    }
                 } else {
                     // Send the response message
                     await sendText(sender_psid, response.result.fulfillment.speech);
@@ -330,12 +403,18 @@ const start = async () => {
                     {
                         "content_type": "text",
                         "title": "html",
-                        "payload": "set default language to html"
+                        "payload": JSON.stringify({
+                            action: "setDefaultLang",
+                            language: "html"
+                        })
                     },
                     {
                         "content_type": "text",
                         "title": "css",
-                        "payload": "set default language to css"
+                        "payload": JSON.stringify({
+                            action: "setDefaultLang",
+                            language: "css"
+                        })
                     }
                 ]
             }
@@ -349,20 +428,66 @@ const start = async () => {
             await typeOn(sender_psid);
             
             const result = await DB.keywordDB.getKeyword({ keyword: payload, language: "html" });
-                                
-            console.log(JSON.stringify(result.attachments));
+                                            
             if (result.attributes.length == 0) {
                 await sendText(sender_psid, "It have only the global attributes");
-            } else {
-                var re = [];
-                
-                for (var i = 0; i < result.attributes.length; i++) {
-                    re.push(result.attributes[i].name);
+            } else if (result.attributes.length <= 11) {
+
+                let response = {
+                    "text": "Choose Attribute You want",
+                    "quick_replies": []
                 }
+
+                for (var i = 0; i < result.attributes.length; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.attributes[i].name,
+                        "payload": JSON.stringify({
+                            action: "queryAttributeFromTag",
+                            language: "html",
+                            keyword: payload,
+                            attribute: result.attributes[i].name
+                        })
+                    });
+                }
+
+                await callSendMessageAPI(sender_psid, response); 
                 
-                await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
-                
+            }else if (result.attributes.length > 11) {
+                let response = {
+                    "text": "Choose Attribute You want",
+                    "quick_replies": []
+                }
+
+                for (var i = 0; i < 10; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.attributes[i].name,
+                        "payload": JSON.stringify({
+                            action: "queryAttributeFromTag",
+                            language: "html",
+                            keyword: payload,
+                            attribute: result.attributes[i].name
+                        })
+                    });
+                }
+
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": "more",
+                    "payload": JSON.stringify({
+                        action: "listAttributeFromTag",
+                        language: "html",
+                        keyword: payload,
+                        startAt: 10,
+                    })
+                });
+
+
+                await callSendMessageAPI(sender_psid, response); 
+
             }
+
             await typeOff(sender_psid);
 
         }
@@ -430,33 +555,75 @@ const start = async () => {
         await callSendMessageAPI(sender_psid, response);
     }
     
-    async function sendQuickReplies(sender_psid, title, qr) {
-        
-        
-        
+    async function askForRate(sender_psid, keyword, language) {
+
         var response = {
             "text": title,
-            "quick_replies": []
-        }
-
-        for (var i in qr ) {
-            var x = {
-                "content_type": "text",
-                "title": "1",
-                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-            }
-
-            x.title = qr[i];
-            response.quick_replies.push(x);
+            "quick_replies": [
+                {
+                    "content_type": "text",
+                    "title": "1",
+                    "payload": JSON.stringify({
+                        action: "rating",
+                        data: { 
+                            rate: 1,
+                            keyword,
+                            language
+                        }
+                    })
+                },
+                {
+                    "content_type": "text",
+                    "title": "2",
+                    "payload": JSON.stringify({
+                        action: "rating",
+                        data: { 
+                            rate: 2,
+                            keyword,
+                            language
+                        }
+                    })
+                },
+                {
+                    "content_type": "text",
+                    "title": "3",
+                    "payload": JSON.stringify({
+                        action: "rating",
+                        data: { 
+                            rate: 3,
+                            keyword,
+                            language
+                        }
+                    })
+                },
+                {
+                    "content_type": "text",
+                    "title": "4",
+                    "payload": JSON.stringify({
+                        action: "rating",
+                        data: { 
+                            rate: 4,
+                            keyword,
+                            language
+                        }
+                    })
+                },
+                {
+                    "content_type": "text",
+                    "title": "5",
+                    "payload": JSON.stringify({
+                        action: "rating",
+                        data: { 
+                            rate: 5,
+                            keyword,
+                            language
+                        }
+                    })
+                }
+            ]
         }
     
         await callSendMessageAPI(sender_psid, response);
-    
-    }
-
-    async function askForRate(sender_psid) {
-
-        await sendQuickReplies(sender_psid, "Please Rate", ["1", "2", "3", "4", "5"]);
     
     }
 
