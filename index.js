@@ -141,6 +141,8 @@ const start = async () => {
                 
                 await typeOn(sender_psid);
                 
+                console.log(payload.language, payload.keyword);
+
                 const result = await DB.keywordDB.getKeyword(payload.language, payload.keyword);
                             
                 var re = "";
@@ -197,7 +199,7 @@ const start = async () => {
                         "quick_replies": []
                     }
     
-                    for (var i = startAt; i < payload.startAt + 10; i++) {
+                    for (var i = payload.startAt; i < payload.startAt + 10; i++) {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
