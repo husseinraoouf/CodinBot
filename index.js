@@ -345,7 +345,7 @@ const start = async () => {
             await sendText(sender_psid, "Oops, try sending another image.");
         } else if (payload === 'attributes') {
 
-            var apiaiRequest = apiaiClient.textRequest(received_message.quick_reply.payload, {
+            var apiaiRequest = apiaiClient.textRequest(payload, {
                 sessionId: sender_psid,
             });
         
