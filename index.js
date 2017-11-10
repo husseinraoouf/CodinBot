@@ -185,7 +185,7 @@ const start = async () => {
                                     {
                                         "type":"postback",
                                         "title": "attributes",
-                                        "payload": "attributes"
+                                        "payload": response.result.parameters.keyword
                                     }
                                 ]
                             }
@@ -309,6 +309,7 @@ const start = async () => {
             
         // Get the payload for the postback
         let payload = received_postback.payload;
+        let title = received_postback.title;
     
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
@@ -343,42 +344,26 @@ const start = async () => {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
             await sendText(sender_psid, "Oops, try sending another image.");
-        } else if (payload === 'attributes') {
+        } else if (title === 'attributes') {
 
-            var apiaiRequest = apiaiClient.textRequest(payload, {
-                sessionId: sender_psid,
-            });
-        
-        
-            apiaiRequest.on('response', async function(response) {
-                if (response.result.action == "listAttributesFromTag") {
-                    await typeOn(sender_psid);
-
-                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
-                                        
-                    if (result.attributes.length == 0) {
-                        await sendText(sender_psid, "It have only the global attributes");
-                    } else {
-                        var re = [];
-                        
-                        for (var i = 0; i < result.attributes.length; i++) {
-                            re.push(result.attributes[i].name);
-                        }
-                        
-                        await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
-                        
-                    }
-                    await typeOff(sender_psid);
+            await typeOn(sender_psid);
+            
+            const result = await DB.keywordDB.getKeyword({ keyword: payload, language: "html" });
+                                
+            console.log(JSON.stringify(result.attachments));
+            if (result.attributes.length == 0) {
+                await sendText(sender_psid, "It have only the global attributes");
+            } else {
+                var re = [];
+                
+                for (var i = 0; i < result.attributes.length; i++) {
+                    re.push(result.attributes[i].name);
                 }
-        
-            });
-        
-        
-            apiaiRequest.on('error', function(error) {
-                console.log(error);
-            });
-             
-            apiaiRequest.end();
+                
+                await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
+                
+            }
+            await typeOff(sender_psid);
 
         }
     }
