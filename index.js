@@ -133,9 +133,12 @@ const start = async () => {
     
             apiaiRequest.on('response', async function(response) {
                 if (response.result.action == "querySyntax"){
+                    console.log(response.result.parameters);
+
                     await typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
 
+                    console.log(result);
                     if(response.result.parameters.keywordkind == "htmlattribute") {
                         var qr = [];
 
