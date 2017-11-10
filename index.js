@@ -169,21 +169,21 @@ const start = async () => {
                 
                 const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
                                                 
-                if (result.attributes.length - startAt <= 11) {
+                if (result.attributes.length - payload.startAt <= 11) {
     
                     let response = {
                         "text": "Choose Attribute You want",
                         "quick_replies": []
                     }
     
-                    for (var i = startAt; i < result.attributes.length; i++) {
+                    for (var i = payload.startAt; i < result.attributes.length; i++) {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
-                                keyword: payload,
+                                keyword: payload.keyword,
                                 attribute: result.attributes[i].name
                             })
                         });
@@ -191,20 +191,20 @@ const start = async () => {
     
                     await callSendMessageAPI(sender_psid, response); 
                     
-                } else if (result.attributes.length - startAt > 11) {
+                } else if (result.attributes.length - payload.startAt > 11) {
                     let response = {
                         "text": "Choose Attribute You want",
                         "quick_replies": []
                     }
     
-                    for (var i = startAt; i < startAt + 10; i++) {
+                    for (var i = startAt; i < payload.startAt + 10; i++) {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
-                                keyword: payload,
+                                keyword: payload.keyword,
                                 attribute: result.attributes[i].name
                             })
                         });
@@ -217,7 +217,7 @@ const start = async () => {
                             action: "listAttributeFromTag",
                             language: payload.language,
                             keyword: payload.keyword,
-                            startAt: startAt+10,
+                            startAt: payload.startAt+10,
                         })
                     });
     
