@@ -198,19 +198,19 @@ const start = async () => {
                     await typeOff(sender_psid);
                 } else if (response.result.action == "listAttributesFromTag") {
                     await typeOn(sender_psid);
-
+                    
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
                                         
                     if (result.attributes.length == 0) {
                         await sendText(sender_psid, "It have only the global attributes");
                     } else {
-                        var re = result.attributes[0].name;
+                        var re = [];
                         
-                        for (var i = 1; i < result.attributes.length; i++) {
-                            re += "\u000A" + result.attributes[i].name;
+                        for (var i = 0; i < result.attributes.length; i++) {
+                            re.push(result.attributes[i].name);
                         }
                         
-                        await sendText(sender_psid, re);
+                        await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
                         
                     }
                     await typeOff(sender_psid);
@@ -359,13 +359,13 @@ const start = async () => {
                     if (result.attributes.length == 0) {
                         await sendText(sender_psid, "It have only the global attributes");
                     } else {
-                        var re = result.attributes[0].name;
+                        var re = [];
                         
-                        for (var i = 1; i < result.attributes.length; i++) {
-                            re += "\u000A" + result.attributes[i].name;
+                        for (var i = 0; i < result.attributes.length; i++) {
+                            re.push(result.attributes[i].name);
                         }
                         
-                        await sendText(sender_psid, re);
+                        await sendQuickReplies(sender_psid, "Choose Attribute You want", re);
                         
                     }
                     await typeOff(sender_psid);
