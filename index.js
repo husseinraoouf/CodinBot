@@ -286,7 +286,7 @@ const start = async () => {
         // Set the response based on the postback payload
         if (payload === 'getstarted') {
 
-            await rp({
+            var body = await rp({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
                 "qs": { "access_token": FB_PAGE_ACCESS_TOKEN },
                 "method": "GET",
