@@ -224,6 +224,93 @@ const start = async () => {
     
                     await callSendMessageAPI(sender_psid, response); 
                 }
+            } else if (payload.action == "queryExampleFromTag") {
+                
+                await typeOn(sender_psid);
+
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
+                            
+                var re = "";
+                
+                for (var i = 0; i < result.attributes.length; i++) {
+                    console.log(result.attributes[i].name)
+                    if(result.examples[i].title == payload.example) {
+                        re = result.examples[i].detail;
+                        break;
+                    }
+                }
+                
+                re = re.split("\\n");
+
+                for (var i in re) {
+                    if (re[i].length > 1) {
+                        await sendText(sender_psid, re[i]);
+                    }
+                }
+
+                await typeOff(sender_psid);
+
+            } else if (payload.action == "listExampleFromTag") {
+                
+                await typeOn(sender_psid);
+                
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
+                                                
+                if (result.examples.length - payload.startAt <= 11) {
+    
+                    let response = {
+                        "text": "Choose example You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = payload.startAt; i < result.examples.length; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.examples[i].title,
+                            "payload": JSON.stringify({
+                                action: "queryExampleFromTag",
+                                language: "html",
+                                keyword: payload.keyword,
+                                example: result.examples[i].title
+                            })
+                        });
+                    }
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                    
+                } else if (result.examples.length - payload.startAt > 11) {
+                    let response = {
+                        "text": "Choose example You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = payload.startAt; i < payload.startAt + 10; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.examples[i].title,
+                            "payload": JSON.stringify({
+                                action: "queryExampleFromTag",
+                                language: "html",
+                                keyword: payload.keyword,
+                                example: result.examples[i].title
+                            })
+                        });
+                    }
+    
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": "more",
+                        "payload": JSON.stringify({
+                            action: "listExampleFromTag",
+                            language: payload.language,
+                            keyword: payload.keyword,
+                            startAt: payload.startAt+10,
+                        })
+                    });
+    
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                }
             }
 
             
@@ -260,12 +347,18 @@ const start = async () => {
                                     {
                                         "type":"postback",
                                         "title": "examples",
-                                        "payload": "examples"
+                                        "payload": JSON.stringify({
+                                            action: "listExamples",
+                                            keyword: response.result.parameters.keyword
+                                        })
                                     },
                                     {
                                         "type":"postback",
                                         "title": "attributes",
-                                        "payload": response.result.parameters.keyword
+                                        "payload": JSON.stringify({
+                                            action: "lsitAttributes",
+                                            keyword: response.result.parameters.keyword
+                                        })
                                     }
                                 ]
                             }
@@ -359,11 +452,10 @@ const start = async () => {
     async function handlePostback(sender_psid, received_postback) {
             
         // Get the payload for the postback
-        let payload = received_postback.payload;
-        let title = received_postback.title;
+        let payload = JSON.stringify(received_postback.payload);
     
         // Set the response based on the postback payload
-        if (payload === 'getstarted') {
+        if (payload.action == 'getstarted') {
 
             var body = await rp({
                 "uri": "https://graph.facebook.com/v2.6/" + sender_psid,
@@ -401,11 +493,11 @@ const start = async () => {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
             await sendText(sender_psid, "Oops, try sending another image.");
-        } else if (title === 'attributes') {
+        } else if (payload.action === 'lsitAttributes') {
 
             await typeOn(sender_psid);
             
-            const result = await DB.keywordDB.getKeyword({ keyword: payload, language: "html" });
+            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
                                             
             if (result.attributes.length == 0) {
                 await sendText(sender_psid, "It have only the global attributes");
@@ -423,7 +515,7 @@ const start = async () => {
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
-                            keyword: payload,
+                            keyword: payload.keyword,
                             attribute: result.attributes[i].name
                         })
                     });
@@ -444,7 +536,7 @@ const start = async () => {
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
-                            keyword: payload,
+                            keyword: payload.keyword,
                             attribute: result.attributes[i].name
                         })
                     });
@@ -456,7 +548,74 @@ const start = async () => {
                     "payload": JSON.stringify({
                         action: "listAttributeFromTag",
                         language: "html",
-                        keyword: payload,
+                        keyword: payload.keyword,
+                        startAt: 10,
+                    })
+                });
+
+
+                await callSendMessageAPI(sender_psid, response); 
+
+            }
+
+            await typeOff(sender_psid);
+
+        }  else if (payload.action == 'listExamples') {
+
+            await typeOn(sender_psid);
+            
+            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
+                                            
+            if (result.examples.length == 0) {
+                await sendText(sender_psid, "It have no example");
+            } else if (result.examples.length <= 11) {
+
+                let response = {
+                    "text": "Choose example You want",
+                    "quick_replies": []
+                }
+
+                for (var i = 0; i < result.examples.length; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.examples[i].title,
+                        "payload": JSON.stringify({
+                            action: "queryExampleFromTag",
+                            language: "html",
+                            keyword: payload.keyword,
+                            example: result.examples[i].title
+                        })
+                    });
+                }
+
+                await callSendMessageAPI(sender_psid, response); 
+                
+            } else if (result.examples.length > 11) {
+                let response = {
+                    "text": "Choose example You want",
+                    "quick_replies": []
+                }
+
+                for (var i = 0; i < 10; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.examples[i].title,
+                        "payload": JSON.stringify({
+                            action: "queryExampleFromTag",
+                            language: "html",
+                            keyword: payload.keyword,
+                            example: result.examples[i].title
+                        })
+                    });
+                }
+
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": "more",
+                    "payload": JSON.stringify({
+                        action: "listExampleFromTag",
+                        language: "html",
+                        keyword: payload.keyword,
                         startAt: 10,
                     })
                 });
