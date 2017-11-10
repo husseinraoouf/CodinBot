@@ -120,10 +120,35 @@ const start = async () => {
 
 
     async function handleMessage(sender_psid, received_message) {
+
+        
         let response;
-    
-        // Checks if the message contains text
-        if (received_message.text) {
+        
+        if (received_message.quick_reply) {
+        
+            var apiaiRequest = apiaiClient.textRequest(received_message.quick_reply.payload, {
+                sessionId: sender_psid,
+            });
+
+
+            apiaiRequest.on('response', async function(response) {
+                if (response.result.action == "setDefaultLang"){
+                    await DB.userDB.setDefaultLang(sender_psid, response.result.parameters.language);            
+                    await sendText(sender_psid, "done");
+                }
+
+            });
+
+
+            apiaiRequest.on('error', function(error) {
+                console.log(error);
+            });
+             
+            apiaiRequest.end();
+
+        }
+            // Checks if the message contains text
+        else if (received_message.text) {
             
             // Create the payload for a basic text message, which
             // will be added to the body of our request to the Send API
@@ -301,24 +326,18 @@ const start = async () => {
                 "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
                 "quick_replies": [
                     {
-                        "content_type": "postback",
+                        "content_type": "text",
                         "title": "html",
                         "payload": "set default language to html"
                     },
                     {
-                        "content_type": "postback",
+                        "content_type": "text",
                         "title": "css",
                         "payload": "set default language to css"
                     }
                 ]
             }
             await callSendMessageAPI(sender_psid, response); 
-        } else if (payload === 'set default language to html') {
-            await DB.userDB.setDefaultLang(sender_psid, "html");            
-            await sendText(sender_psid, "done");
-        } else if (payload === 'set default language to css') {
-            await DB.userDB.setDefaultLang(sender_psid, "css");            
-            await sendText(sender_psid, "done");
         } else if (payload === 'yes') {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
