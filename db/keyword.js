@@ -6,7 +6,7 @@ module.exports = ({ Keywords, Users }) => {
         console.log (language, keyword, rate);
 
         const response = await Keywords.update(
-            { keyword, language, keywordkind },
+            { keyword, language },
             { $set: { rating: rate }, $inc: { numrated: 1 } }
         );
     }
