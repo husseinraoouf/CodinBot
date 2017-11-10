@@ -140,10 +140,8 @@ const start = async () => {
             } else if (payload.action == "queryAttributeFromTag") {
                 
                 await typeOn(sender_psid);
-                
-                console.log(payload.language, payload.keyword);
 
-                const result = await DB.keywordDB.getKeyword(payload.language, payload.keyword);
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
                             
                 var re = "";
                 
