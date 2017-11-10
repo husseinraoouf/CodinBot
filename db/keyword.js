@@ -2,8 +2,8 @@ module.exports = ({ Keywords, Users }) => {
     
     let methods = {}
 
-    methods.addrating = async (language, keyword, keywordkind, rate) => {
-        console.log (language, keyword, keywordkind, rate);
+    methods.addrating = async (language, keyword, rate) => {
+        console.log (language, keyword, rate);
 
         const response = await Keywords.update(
             { keyword, language, keywordkind },
@@ -12,9 +12,9 @@ module.exports = ({ Keywords, Users }) => {
     }
 
 
-    methods.getKeyword = async ({ language, keyword, keywordkind }) => {
+    methods.getKeyword = async ({ language, keyword }) => {
         const response = await Keywords.findOne(
-            { keyword, language, keywordkind }
+            { keyword, language }
         );
 
         return response;

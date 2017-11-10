@@ -240,7 +240,7 @@ const start = async () => {
     
                     console.log(rate);
                     if (rate >= 1 && rate <= 5) {
-                        await DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, response.result.parameters.keywordkind, rate);
+                        await DB.keywordDB.addrating(response.result.parameters.language, response.result.parameters.keyword, rate);
                         await sendText(sender_psid, "Thank you");
                     } else {
                         await sendText(sender_psid, "Please rate between 1 and 5");                    
