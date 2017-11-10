@@ -536,7 +536,7 @@ const start = async () => {
     async function askForRate(sender_psid, keyword, language) {
 
         var response = {
-            "text": title,
+            "text": "Please Rate",
             "quick_replies": [
                 {
                     "content_type": "text",
