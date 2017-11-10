@@ -10,7 +10,7 @@ module.exports = ({ Users }, { userByID }) => {
     methods.adduser = async (sender_psid, name) => {
 
       const response = await Users.insert(
-          { _id: sender_psid, name },
+          { sender_psid, name },
       );
 
       console.log(response);
@@ -21,7 +21,7 @@ module.exports = ({ Users }, { userByID }) => {
     methods.setDefaultLang = async (sender_psid, lang) => {
         
         const response = await Users.update(
-            { _id :sender_psid },
+            { sender_psid },
             { $set: { defaultlang: lang } }
         );
 
