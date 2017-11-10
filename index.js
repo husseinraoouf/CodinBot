@@ -140,25 +140,8 @@ const start = async () => {
 
                     console.log(result);
                     if(response.result.parameters.keywordkind == "htmlattribute") {
-                        var qr = [];
-
-                        for (var i in result.tags) {
-                            var x = {
-                                        "content_type": "text",
-                                        "title": result.tags[i],
-                                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-                            }
-
-                            qr.push(x);
-                        }
-
-                        const response = {
-                            "text": "Please tell me in which tag.",
-                            "quick_replies": qr
-                        }
-
-                        // Send the response message
-                        await callSendMessageAPI(sender_psid, response);
+                        
+                        await sendQuickReplies(sender_psid, "Please tell me in which tag.", qr, result.tags[i])
 
                     } else {
 
@@ -225,7 +208,6 @@ const start = async () => {
 
                     for (var i in re) {
                         if (re[i].length > 1) {
-                            // console.log(re[i], re[i].length);
                             await sendText(sender_psid, re[i]);
                         }
                     }
@@ -319,23 +301,24 @@ const start = async () => {
                 "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
                 "quick_replies": [
                     {
-                        "content_type": "text",
+                        "content_type": "postback",
                         "title": "html",
-                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                        "payload": "set default language to html"
                     },
                     {
-                        "content_type": "text",
+                        "content_type": "postback",
                         "title": "css",
-                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                    },
-                    {
-                        "content_type": "text",
-                        "title": "suggest a new language",
-                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+                        "payload": "set default language to css"
                     }
                 ]
             }
             await callSendMessageAPI(sender_psid, response); 
+        } else if (payload === 'set default language to html') {
+            await DB.userDB.setDefaultLang(sender_psid, "html");            
+            await sendText(sender_psid, "done");
+        } else if (payload === 'set default language to css') {
+            await DB.userDB.setDefaultLang(sender_psid, "css");            
+            await sendText(sender_psid, "done");
         } else if (payload === 'yes') {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
@@ -405,40 +388,33 @@ const start = async () => {
         await callSendMessageAPI(sender_psid, response);
     }
     
-    
-    async function askForRate(sender_psid) {
-        const response = {
-            "text": "Please Rate",
-            "quick_replies": [
-                {
-                    "content_type": "text",
-                    "title": "1",
-                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-                },
-                {
-                    "content_type": "text",
-                    "title": "2",
-                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                },
-                {
-                    "content_type": "text",
-                    "title": "3",
-                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                },
-                {
-                    "content_type": "text",
-                    "title": "4",
-                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                },
-                {
-                    "content_type": "text",
-                    "title": "5",
-                    "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-                }
-            ]
+    async function sendQuickReplies(sender_psid, title, qr) {
+        
+        
+        
+        var response = {
+            "text": title,
+            "quick_replies": []
+        }
+
+        for (var i in qr ) {
+            var x = {
+                "content_type": "text",
+                "title": "1",
+                "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+            }
+
+            x.title = qr[i];
+            response.quick_replies.push(x);
         }
     
         await callSendMessageAPI(sender_psid, response);
+    
+    }
+
+    async function askForRate(sender_psid) {
+
+        await sendQuickReplies(sender_psid, "Please Rate", ["1", "2", "3", "4", "5"]);
     
     }
 
