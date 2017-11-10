@@ -181,6 +181,11 @@ const start = async () => {
                                         "type":"postback",
                                         "title": "examples",
                                         "payload": "examples"
+                                    },
+                                    {
+                                        "type":"postback",
+                                        "title": "attributes",
+                                        "payload": "attributes"
                                     }
                                 ]
                             }
@@ -191,7 +196,7 @@ const start = async () => {
                     await callSendMessageAPI(sender_psid, response);
                     await askForRate(sender_psid);
                     await typeOff(sender_psid);
-                } else if (response.result.action == "listAttributesFromTag"){
+                } else if (response.result.action == "listAttributesFromTag") {
                     await typeOn(sender_psid);
 
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
@@ -338,6 +343,43 @@ const start = async () => {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
             await sendText(sender_psid, "Oops, try sending another image.");
+        } else if (payload === 'attributes') {
+
+            var apiaiRequest = apiaiClient.textRequest(received_message.quick_reply.payload, {
+                sessionId: sender_psid,
+            });
+        
+        
+            apiaiRequest.on('response', async function(response) {
+                if (response.result.action == "listAttributesFromTag") {
+                    await typeOn(sender_psid);
+
+                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
+                                        
+                    if (result.attributes.length == 0) {
+                        await sendText(sender_psid, "It have only the global attributes");
+                    } else {
+                        var re = result.attributes[0].name;
+                        
+                        for (var i = 1; i < result.attributes.length; i++) {
+                            re += "\u000A" + result.attributes[i].name;
+                        }
+                        
+                        await sendText(sender_psid, re);
+                        
+                    }
+                    await typeOff(sender_psid);
+                }
+        
+            });
+        
+        
+            apiaiRequest.on('error', function(error) {
+                console.log(error);
+            });
+             
+            apiaiRequest.end();
+
         }
     }
     
