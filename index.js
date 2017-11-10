@@ -356,7 +356,7 @@ const start = async () => {
                                         "type":"postback",
                                         "title": "attributes",
                                         "payload": JSON.stringify({
-                                            action: "lsitAttributes",
+                                            action: "listAttributes",
                                             keyword: response.result.parameters.keyword
                                         })
                                     }
@@ -452,7 +452,7 @@ const start = async () => {
     async function handlePostback(sender_psid, received_postback) {
             
         // Get the payload for the postback
-        let payload = JSON.stringify(received_postback.payload);
+        let payload = JSON.parse(received_postback.payload);
     
         // Set the response based on the postback payload
         if (payload.action == 'getstarted') {
@@ -493,7 +493,7 @@ const start = async () => {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
             await sendText(sender_psid, "Oops, try sending another image.");
-        } else if (payload.action === 'lsitAttributes') {
+        } else if (payload.action == 'listAttributes') {
 
             await typeOn(sender_psid);
             
