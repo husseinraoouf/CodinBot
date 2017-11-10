@@ -18,37 +18,37 @@ const start = async () => {
     app = express();
     app.use(bodyParser.json());
 
-    app.set('view engine', 'pug')
-    app.use(express.static('public'))
+    // app.set('view engine', 'pug')
+    // app.use(express.static('public'))
 
-    app.get('/', async function (req, res) {
+    // app.get('/', async function (req, res) {
 
-        console.log(req.query);
+    //     console.log(req.query);
 
 
-        const result = await DB.keywordDB.getKeyword(req.query);
+    //     const result = await DB.keywordDB.getKeyword(req.query);
 
-        // request({
-        //     uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
-        // }, function(error, response, body) {
-        //     var $ = cheerio.load(body);
+    //     // request({
+    //     //     uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
+    //     // }, function(error, response, body) {
+    //     //     var $ = cheerio.load(body);
 
-        //     // var x = $("article#wikiArticle");
+    //     //     // var x = $("article#wikiArticle");
 
-        //     console.log(x.html());
-        //     // var x = $(".answer .answercell .post-text").first();
-        //     // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-        //     // x.find('pre').each(function () {
-        //     //     var qw = $(this);
-        //     //     qw.addClass('prettyprint');
-        //     // });
-        //     res.render('index', { title: result.title, message: result.body, code: x.html() })
+    //     //     console.log(x.html());
+    //     //     // var x = $(".answer .answercell .post-text").first();
+    //     //     // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+    //     //     // x.find('pre').each(function () {
+    //     //     //     var qw = $(this);
+    //     //     //     qw.addClass('prettyprint');
+    //     //     // });
+    //     //     res.render('index', { title: result.title, message: result.body, code: x.html() })
         
-        // });
+    //     // });
 
-        console.log (result.difintion);
-        res.render('index', { title: result.keyword + " | " + result.language, difintion: result.difintion, details: result.details, examples: result.examples })
-    })
+    //     console.log (result.difintion);
+    //     res.render('index', { title: result.keyword + " | " + result.language, difintion: result.difintion, details: result.details, examples: result.examples })
+    // })
 
 
     // Adds support for GET requests to our webhook
@@ -135,28 +135,53 @@ const start = async () => {
                 if (response.result.action == "querySyntax"){
                     await typeOn(sender_psid);
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
-                                        
-                    response = {
-                        "attachment":{
-                            "type":"template",
-                            "payload":{
-                            "template_type":"button",
-                            "text": result.difintion,
-                            "buttons":[
-                                {
-                                "type":"web_url",
-                                "url": "https://codingbot.herokuapp.com/?language=" + response.result.parameters.language +"&keyword=" + response.result.parameters.keyword + "&keywordkind=" + response.result.parameters.keywordkind,
-                                "title": "More Details",
-                                "webview_height_ratio": "tall"
+
+                    if(response.result.parameters.keywordkind == "htmlattribute") {
+                        var qr = [];
+
+                        for (var i in result.tags) {
+                            var x = {
+                                        "content_type": "text",
+                                        "title": result.tags[i],
+                                        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+                            }
+
+                            qr.push(x);
+                        }
+
+                        const response = {
+                            "text": "Please tell me in which tag.",
+                            "quick_replies": qr
+                        }
+
+                        // Send the response message
+                        await callSendMessageAPI(sender_psid, response);
+
+                    } else {
+
+                        response = {
+                            "attachment":{
+                                "type":"template",
+                                "payload":{
+                                "template_type":"button",
+                                "text": result.difintion,
+                                "buttons":[
+                                    {
+                                    "type":"web_url",
+                                    "url": "https://codingbot.herokuapp.com/?language=" + response.result.parameters.language +"&keyword=" + response.result.parameters.keyword + "&keywordkind=" + response.result.parameters.keywordkind,
+                                    "title": "More Details",
+                                    "webview_height_ratio": "tall"
+                                    }
+                                ]
                                 }
-                            ]
                             }
                         }
+
+                        // Send the response message
+                        await callSendMessageAPI(sender_psid, response);
+                        await askForRate(sender_psid);
                     }
-    
-                    // Send the response message
-                    await callSendMessageAPI(sender_psid, response);
-                    await askForRate(sender_psid);
+
                     await typeOff(sender_psid);
                 } else if (response.result.action == "listAttributes"){
                     await typeOn(sender_psid);
