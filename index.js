@@ -415,6 +415,8 @@ const start = async () => {
             });
     
             apiaiRequest.on('response', async function(response) {
+                console.log(response);
+
                 if (response.result.action == "querySyntax"){
                     console.log(response.result.parameters);
 
