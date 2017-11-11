@@ -415,7 +415,6 @@ const start = async () => {
             });
     
             apiaiRequest.on('response', async function(response) {
-                console.log(response);
 
                 if (response.result.action == "querySyntax"){
                     console.log(response.result.parameters);
@@ -467,7 +466,7 @@ const start = async () => {
 
                     } else {
 
-                        console.log("yes");
+                        console.log("yes: "+ response.result.parameters);
 
                         
                         if (result.tags.length == 1) {
@@ -497,13 +496,13 @@ const start = async () => {
                         
                         } else if (result.tags.length <= 11) {
             
-                            let response = {
+                            let ourresponse = {
                                 "text": "Choose tag You want",
                                 "quick_replies": []
                             }
             
                             for (var i = 0; i < result.tags.length; i++) {
-                                response.quick_replies.push({
+                                ourresponse.quick_replies.push({
                                     "content_type": "text",
                                     "title": result.tags[i],
                                     "payload": JSON.stringify({
@@ -515,16 +514,16 @@ const start = async () => {
                                 });
                             }
                                        
-                           await callSendMessageAPI(sender_psid, response);
+                           await callSendMessageAPI(sender_psid, ourresponse);
                            
                         } else if (result.tags.length > 11) {
-                            let response = {
+                            let ourresponse = {
                                 "text": "Choose tag You want",
                                 "quick_replies": []
                             }
             
                             for (var i = 0; i < 10; i++) {
-                                response.quick_replies.push({
+                                ourresponse.quick_replies.push({
                                     "content_type": "text",
                                     "title": result.tags[i],
                                     "payload": JSON.stringify({
@@ -536,7 +535,7 @@ const start = async () => {
                                 });
                             }
             
-                            response.quick_replies.push({
+                            ourresponse.quick_replies.push({
                                 "content_type": "text",
                                 "title": "more",
                                 "payload": JSON.stringify({
@@ -547,7 +546,7 @@ const start = async () => {
                                 })
                             });
             
-                           await callSendMessageAPI(sender_psid, response);
+                           await callSendMessageAPI(sender_psid, ourresponse);
                     
                         }
             
