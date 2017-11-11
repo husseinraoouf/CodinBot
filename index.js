@@ -249,10 +249,6 @@ const start = async () => {
                     }
                 }
 
-
-                console.log("`````html\u000A" + re.code.replace(/\\n/g, '\u000A'));
-
-
                 var ourresponse = {
                     "attachment":{
                         "type":"template",
@@ -273,6 +269,16 @@ const start = async () => {
 
                 // Send the response message
                 await callSendMessageAPI(sender_psid, ourresponse);
+
+
+                if (re.note) {
+                    var response = re.note.split("\\n");
+                    for (var i in response) {
+                        if (response[i].length > 1) {
+                            await sendText(sender_psid, response[i]);
+                        }
+                    }
+                }
 
                 await typeOff(sender_psid);
 
@@ -594,6 +600,50 @@ const start = async () => {
                                             
             if (result.examples.length == 0) {
                 await sendText(sender_psid, "It have no example");
+            } else if (result.examples.length == 1) {
+                                            
+                var re = result.examples[0];
+                
+                if (re.detail) {
+                    var response = re.detail.split("\\n");
+                    for (var i in response) {
+                        if (response[i].length > 1) {
+                            await sendText(sender_psid, response[i]);
+                        }
+                    }
+                }
+
+                var ourresponse = {
+                    "attachment":{
+                        "type":"template",
+                        "payload":{
+                        "template_type":"button",
+                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                        "buttons":[
+                                {
+                                    "type":"web_url",
+                                    "url": "https://codingbot.herokuapp.com/",
+                                    "title": "More Details",
+                                    "webview_height_ratio": "tall"
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                // Send the response message
+                await callSendMessageAPI(sender_psid, ourresponse);
+
+
+                if (re.note) {
+                    var response = re.note.split("\\n");
+                    for (var i in response) {
+                        if (response[i].length > 1) {
+                            await sendText(sender_psid, response[i]);
+                        }
+                    }
+                }            
+            
             } else if (result.examples.length <= 11) {
 
                 let response = {
