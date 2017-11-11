@@ -125,19 +125,7 @@ const start = async () => {
         
             let payload = JSON.parse(received_message.quick_reply.payload);
             
-            if (payload.action == "setDefaultLang"){
-                await DB.userDB.setDefaultLang(sender_psid, payload.language);            
-                await sendText(sender_psid, "done");
-            } else if (payload.action == "rating") {
-
-                if (payload.rate >= 1 && payload.rate <= 5) {
-                    await DB.keywordDB.addrating(payload.language, payload.keyword, payload.rate);
-                    await sendText(sender_psid, "Thank you");
-                } else {
-                    await sendText(sender_psid, "Please rate between 1 and 5");                    
-                    await askForRate(sender_psid);
-                }
-            } else if (payload.action == "queryAttributeFromTag") {
+            if (payload.action == "queryAttributeFromTag") {
                 
                 await typeOn(sender_psid);
 
@@ -352,6 +340,67 @@ const start = async () => {
     
                     await callSendMessageAPI(sender_psid, response); 
                 }
+            } else if (payload.action == "listTagsFromAttribute") {
+                
+                await typeOn(sender_psid);
+                
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
+                                                
+                if (result.tags.length - payload.startAt <= 11) {
+    
+                    let response = {
+                        "text": "Choose tag You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = payload.startAt; i < result.tags.length; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.tags[i],
+                            "payload": JSON.stringify({
+                                action: "queryAttributeFromTag",
+                                language: "html",
+                                keyword: result.tags[i],
+                                attribute: payload.keyword
+                            })
+                        });
+                    }
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                    
+                } else if (result.examples.length - payload.startAt > 11) {
+                    let response = {
+                        "text": "Choose example You want",
+                        "quick_replies": []
+                    }
+    
+                    for (var i = payload.startAt; i < payload.startAt + 10; i++) {
+                        response.quick_replies.push({
+                            "content_type": "text",
+                            "title": result.tags[i],
+                            "payload": JSON.stringify({
+                                action: "queryAttributeFromTag",
+                                language: "html",
+                                keyword: payload.keyword,
+                                example: result.examples[i].title
+                            })
+                        });
+                    }
+    
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": "more",
+                        "payload": JSON.stringify({
+                            action: "listTagsFromAttribute",
+                            language: payload.language,
+                            keyword: payload.keyword,
+                            startAt: payload.startAt+10,
+                        })
+                    });
+    
+    
+                    await callSendMessageAPI(sender_psid, response); 
+                }
             }
 
             
@@ -370,47 +419,135 @@ const start = async () => {
                     console.log(response.result.parameters);
 
                     await typeOn(sender_psid);
+
                     const result = await DB.keywordDB.getKeyword(response.result.parameters);
 
-                    var ourresponse = {
-                        "attachment":{
-                            "type":"template",
-                            "payload":{
-                            "template_type":"button",
-                            "text": result.difintion,
-                            "buttons":[
-                                    {
-                                        "type":"web_url",
-                                        "url": result.link,
-                                        "title": "More Details",
-                                        "webview_height_ratio": "tall"
-                                    },
-                                    {
-                                        "type":"postback",
-                                        "title": "examples",
-                                        "payload": JSON.stringify({
-                                            action: "listExamples",
-                                            language: response.result.parameters.language,
-                                            keyword: response.result.parameters.keyword
-                                        })
-                                    },
-                                    {
-                                        "type":"postback",
-                                        "title": "attributes",
-                                        "payload": JSON.stringify({
-                                            action: "listAttributes",
-                                            language: response.result.parameters.language,
-                                            keyword: response.result.parameters.keyword
-                                        })
-                                    }
-                                ]
+
+                    if (response.result.parameters.keywordkind == "tag") {
+
+                        var response = {
+                            "attachment":{
+                                "type":"template",
+                                "payload":{
+                                "template_type":"button",
+                                "text": result.difintion,
+                                "buttons":[
+                                        {
+                                            "type":"web_url",
+                                            "url": result.link,
+                                            "title": "More Details",
+                                            "webview_height_ratio": "tall"
+                                        },
+                                        {
+                                            "type":"postback",
+                                            "title": "examples",
+                                            "payload": JSON.stringify({
+                                                action: "listExamples",
+                                                language: response.result.parameters.language,
+                                                keyword: response.result.parameters.keyword
+                                            })
+                                        },
+                                        {
+                                            "type":"postback",
+                                            "title": "attributes",
+                                            "payload": JSON.stringify({
+                                                action: "listAttributes",
+                                                language: response.result.parameters.language,
+                                                keyword: response.result.parameters.keyword
+                                            })
+                                        }
+                                    ]
+                                }
                             }
                         }
+
+                        await callSendMessageAPI(sender_psid, response);                        
+
+                    } else {
+
+                        const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language });
+                        
+                        if (result.tags.length == 1) {
+
+                            
+                            var re = "";
+                            
+                            for (var i = 0; i < resultattr.attributes.length; i++) {
+                                console.log(resultattr.attributes[i].name)
+                                if(resultattr.attributes[i].name == response.result.parameters.keyword) {
+                                    re = resultattr.attributes[i].detail;
+                                    break;
+                                }
+                            }
+                            
+                            re = re.split("\\n");
+            
+                            for (var i in re) {
+                                if (re[i].length > 1) {
+                                    await sendText(sender_psid, re[i]);
+                                }
+                            }
+                         
+                        
+                        } else if (result.tags.length <= 11) {
+            
+                            let response = {
+                                "text": "Choose tag You want",
+                                "quick_replies": []
+                            }
+            
+                            for (var i = 0; i < result.tags.length; i++) {
+                                response.quick_replies.push({
+                                    "content_type": "text",
+                                    "title": result.tags[i],
+                                    "payload": JSON.stringify({
+                                        action: "queryAttributeFromTag",
+                                        language: "html",
+                                        keyword: result.tags[i],
+                                        attribute: response.result.parameters.keyword
+                                    })
+                                });
+                            }
+                                       
+                           await callSendMessageAPI(sender_psid, response);
+                           
+                        } else if (result.tags.length > 11) {
+                            let response = {
+                                "text": "Choose tag You want",
+                                "quick_replies": []
+                            }
+            
+                            for (var i = 0; i < 10; i++) {
+                                response.quick_replies.push({
+                                    "content_type": "text",
+                                    "title": result.tags[i],
+                                    "payload": JSON.stringify({
+                                        action: "queryAttributeFromTag",
+                                        language: "html",
+                                        keyword: result.tags[i],
+                                        attribute: response.result.parameters.keyword
+                                    })
+                                });
+                            }
+            
+                            response.quick_replies.push({
+                                "content_type": "text",
+                                "title": "more",
+                                "payload": JSON.stringify({
+                                    action: "listTagsFromAttribute",
+                                    language: "html",
+                                    keyword: response.result.parameters.keyword,
+                                    startAt: 10,
+                                })
+                            });
+            
+                           await callSendMessageAPI(sender_psid, response);
+                    
+                        }
+            
                     }
 
                     // Send the response message
-                    await callSendMessageAPI(sender_psid, ourresponse);
-                    await askForRate(sender_psid, response.result.parameters.keyword, response.result.parameters.language);
                     await typeOff(sender_psid);
                 } else if (response.result.action == "queryAttribute"){
                     console.log(response.result.parameters);                            
@@ -765,77 +902,6 @@ const start = async () => {
         await callSendMessageAPI(sender_psid, response);
     }
     
-    async function askForRate(sender_psid, keyword, language) {
-
-        var response = {
-            "text": "Please Rate",
-            "quick_replies": [
-                {
-                    "content_type": "text",
-                    "title": "1",
-                    "payload": JSON.stringify({
-                        action: "rating",
-                        data: { 
-                            rate: 1,
-                            keyword,
-                            language
-                        }
-                    })
-                },
-                {
-                    "content_type": "text",
-                    "title": "2",
-                    "payload": JSON.stringify({
-                        action: "rating",
-                        data: { 
-                            rate: 2,
-                            keyword,
-                            language
-                        }
-                    })
-                },
-                {
-                    "content_type": "text",
-                    "title": "3",
-                    "payload": JSON.stringify({
-                        action: "rating",
-                        data: { 
-                            rate: 3,
-                            keyword,
-                            language
-                        }
-                    })
-                },
-                {
-                    "content_type": "text",
-                    "title": "4",
-                    "payload": JSON.stringify({
-                        action: "rating",
-                        data: { 
-                            rate: 4,
-                            keyword,
-                            language
-                        }
-                    })
-                },
-                {
-                    "content_type": "text",
-                    "title": "5",
-                    "payload": JSON.stringify({
-                        action: "rating",
-                        data: { 
-                            rate: 5,
-                            keyword,
-                            language
-                        }
-                    })
-                }
-            ]
-        }
-    
-        await callSendMessageAPI(sender_psid, response);
-    
-    }
 
     const PORT = process.argv[2] || 5000;
     app.listen(PORT, () => {
