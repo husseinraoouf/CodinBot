@@ -574,10 +574,10 @@ const start = async () => {
                                     {
                                         "title": "View",
                                         "type": "web_url",
-                                        "url": "https://www.google.com.eg/",
+                                        "url": "https://codingbot.herokuapp.com/",
                                         "messenger_extensions": true,
                                         "webview_height_ratio": "tall",
-                                        "fallback_url": "https://www.google.com.eg/"            
+                                        "fallback_url": "https://codingbot.herokuapp.com/"            
                                     }
                                 ]
                             },
@@ -586,10 +586,10 @@ const start = async () => {
                                 "subtitle": "See all our colors",
                                 "default_action": {
                                     "type": "web_url",
-                                    "url": "https://www.google.com.eg/",
+                                    "url": "https://codingbot.herokuapp.com/",
                                     "messenger_extensions": true,
                                     "webview_height_ratio": "tall",
-                                    "fallback_url": "https://www.google.com.eg/"
+                                    "fallback_url": "https://codingbot.herokuapp.com/"
                                 }
                             },
                             {
@@ -598,19 +598,19 @@ const start = async () => {
                                 "subtitle": "100% Cotton, 200% Comfortable",
                                 "default_action": {
                                     "type": "web_url",
-                                    "url": "https://www.google.com.eg/",
+                                    "url": "https://codingbot.herokuapp.com/",
                                     "messenger_extensions": true,
                                     "webview_height_ratio": "tall",
-                                    "fallback_url": "https://www.google.com.eg/"
+                                    "fallback_url": "https://codingbot.herokuapp.com/"
                                 },
                                 "buttons": [
                                     {
                                         "title": "Shop Now",
                                         "type": "web_url",
-                                        "url": "https://www.google.com.eg/",
+                                        "url": "https://codingbot.herokuapp.com/",
                                         "messenger_extensions": true,
                                         "webview_height_ratio": "tall",
-                                        "fallback_url": "https://www.google.com.eg/"            
+                                        "fallback_url": "https://codingbot.herokuapp.com/"            
                                     }
                                 ]        
                             }
