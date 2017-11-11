@@ -569,15 +569,12 @@ const start = async () => {
                             {
                                 "title": "Classic T-Shirt Collection",
                                 "subtitle": "See all our colors",
-                                "image_url": "http://code.emc.com/images/code_icon.png",          
                                 "buttons": [
                                     {
                                         "title": "View",
                                         "type": "web_url",
                                         "url": "https://codingbot.herokuapp.com/",
-                                        "messenger_extensions": true,
                                         "webview_height_ratio": "tall",
-                                        "fallback_url": "https://codingbot.herokuapp.com/"            
                                     }
                                 ]
                             },
@@ -587,9 +584,7 @@ const start = async () => {
                                 "default_action": {
                                     "type": "web_url",
                                     "url": "https://codingbot.herokuapp.com/",
-                                    "messenger_extensions": true,
                                     "webview_height_ratio": "tall",
-                                    "fallback_url": "https://codingbot.herokuapp.com/"
                                 }
                             },
                             {
@@ -599,18 +594,14 @@ const start = async () => {
                                 "default_action": {
                                     "type": "web_url",
                                     "url": "https://codingbot.herokuapp.com/",
-                                    "messenger_extensions": true,
                                     "webview_height_ratio": "tall",
-                                    "fallback_url": "https://codingbot.herokuapp.com/"
                                 },
                                 "buttons": [
                                     {
                                         "title": "Shop Now",
                                         "type": "web_url",
                                         "url": "https://codingbot.herokuapp.com/",
-                                        "messenger_extensions": true,
                                         "webview_height_ratio": "tall",
-                                        "fallback_url": "https://codingbot.herokuapp.com/"            
                                     }
                                 ]        
                             }
