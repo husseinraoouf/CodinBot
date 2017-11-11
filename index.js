@@ -230,23 +230,49 @@ const start = async () => {
 
                 const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
                             
-                var re = "";
+                var re;
                 
                 for (var i = 0; i < result.attributes.length; i++) {
                     console.log(result.attributes[i].name)
                     if(result.examples[i].title == payload.example) {
-                        re = result.examples[i].detail;
+                        re = result.examples[i]
                         break;
                     }
                 }
-                
-                re = re.split("\\n");
 
-                for (var i in re) {
-                    if (re[i].length > 1) {
-                        await sendText(sender_psid, re[i]);
+                if (re.detail) {
+                    var response = re.split("\\n");
+                    for (var i in response) {
+                        if (response[i].length > 1) {
+                            await sendText(sender_psid, response[i]);
+                        }
                     }
                 }
+
+
+                console.log("`````html\u000A" + re.code.replace(/\\n/g, '\u000A');
+
+
+                var ourresponse = {
+                    "attachment":{
+                        "type":"template",
+                        "payload":{
+                        "template_type":"button",
+                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                        "buttons":[
+                                {
+                                    "type":"web_url",
+                                    "url": "https://codingbot.herokuapp.com/",
+                                    "title": "More Details",
+                                    "webview_height_ratio": "tall"
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                // Send the response message
+                await callSendMessageAPI(sender_psid, ourresponse);
 
                 await typeOff(sender_psid);
 
@@ -497,127 +523,66 @@ const start = async () => {
 
             await typeOn(sender_psid);
             
-            // const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
+            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
                                             
-            // if (result.attributes.length == 0) {
-            //     await sendText(sender_psid, "It have only the global attributes");
-            // } else if (result.attributes.length <= 11) {
+            if (result.attributes.length == 0) {
+                await sendText(sender_psid, "It have only the global attributes");
+            } else if (result.attributes.length <= 11) {
 
-            //     let response = {
-            //         "text": "Choose Attribute You want",
-            //         "quick_replies": []
-            //     }
-
-            //     for (var i = 0; i < result.attributes.length; i++) {
-            //         response.quick_replies.push({
-            //             "content_type": "text",
-            //             "title": result.attributes[i].name,
-            //             "payload": JSON.stringify({
-            //                 action: "queryAttributeFromTag",
-            //                 language: "html",
-            //                 keyword: payload.keyword,
-            //                 attribute: result.attributes[i].name
-            //             })
-            //         });
-            //     }
-
-            //     await callSendMessageAPI(sender_psid, response); 
-                
-            // }else if (result.attributes.length > 11) {
-            //     let response = {
-            //         "text": "Choose Attribute You want",
-            //         "quick_replies": []
-            //     }
-
-            //     for (var i = 0; i < 10; i++) {
-            //         response.quick_replies.push({
-            //             "content_type": "text",
-            //             "title": result.attributes[i].name,
-            //             "payload": JSON.stringify({
-            //                 action: "queryAttributeFromTag",
-            //                 language: "html",
-            //                 keyword: payload.keyword,
-            //                 attribute: result.attributes[i].name
-            //             })
-            //         });
-            //     }
-
-            //     response.quick_replies.push({
-            //         "content_type": "text",
-            //         "title": "more",
-            //         "payload": JSON.stringify({
-            //             action: "listAttributeFromTag",
-            //             language: "html",
-            //             keyword: payload.keyword,
-            //             startAt: 10,
-            //         })
-            //     });
-
-
-            //     await callSendMessageAPI(sender_psid, response); 
-
-            // }
-
-
-            let response = {
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "list",
-                        "top_element_style": "compact",
-                        "elements": [
-                            {
-                                "title": "Classic T-Shirt Collection",
-                                "subtitle": "See all our colors",
-                                "buttons": [
-                                    {
-                                        "title": "View",
-                                        "type": "web_url",
-                                        "url": "https://codingbot.herokuapp.com/",
-                                        "webview_height_ratio": "tall",
-                                    }
-                                ]
-                            },
-                            {
-                                "title": "Classic White T-Shirt",
-                                "subtitle": "See all our colors",
-                                "default_action": {
-                                    "type": "web_url",
-                                    "url": "https://codingbot.herokuapp.com/",
-                                    "webview_height_ratio": "tall",
-                                }
-                            },
-                            {
-                                "title": "Classic Blue T-Shirt",
-                                "image_url": "http://code.emc.com/images/code_icon.png",
-                                "subtitle": "100% Cotton, 200% Comfortable",
-                                "default_action": {
-                                    "type": "web_url",
-                                    "url": "https://codingbot.herokuapp.com/",
-                                    "webview_height_ratio": "tall",
-                                },
-                                "buttons": [
-                                    {
-                                        "title": "Shop Now",
-                                        "type": "web_url",
-                                        "url": "https://codingbot.herokuapp.com/",
-                                        "webview_height_ratio": "tall",
-                                    }
-                                ]        
-                            }
-                        ],
-                        "buttons": [
-                            {
-                            "title": "View More",
-                            "type": "postback",
-                            "payload": "payload"            
-                            }
-                        ]  
-                    }
+                let response = {
+                    "text": "Choose Attribute You want",
+                    "quick_replies": []
                 }
-            }
 
-            await callSendMessageAPI(sender_psid, response); 
+                for (var i = 0; i < result.attributes.length; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.attributes[i].name,
+                        "payload": JSON.stringify({
+                            action: "queryAttributeFromTag",
+                            language: "html",
+                            keyword: payload.keyword,
+                            attribute: result.attributes[i].name
+                        })
+                    });
+                }
+
+                await callSendMessageAPI(sender_psid, response); 
+                
+            }else if (result.attributes.length > 11) {
+                let response = {
+                    "text": "Choose Attribute You want",
+                    "quick_replies": []
+                }
+
+                for (var i = 0; i < 10; i++) {
+                    response.quick_replies.push({
+                        "content_type": "text",
+                        "title": result.attributes[i].name,
+                        "payload": JSON.stringify({
+                            action: "queryAttributeFromTag",
+                            language: "html",
+                            keyword: payload.keyword,
+                            attribute: result.attributes[i].name
+                        })
+                    });
+                }
+
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": "more",
+                    "payload": JSON.stringify({
+                        action: "listAttributeFromTag",
+                        language: "html",
+                        keyword: payload.keyword,
+                        startAt: 10,
+                    })
+                });
+
+
+                await callSendMessageAPI(sender_psid, response); 
+
+            }
 
             await typeOff(sender_psid);
 
