@@ -495,64 +495,130 @@ const start = async () => {
             await sendText(sender_psid, "Oops, try sending another image.");
         } else if (payload.action == 'listAttributes') {
 
-            await typeOn(sender_psid);
+            // await typeOn(sender_psid);
             
-            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
+            // const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
                                             
-            if (result.attributes.length == 0) {
-                await sendText(sender_psid, "It have only the global attributes");
-            } else if (result.attributes.length <= 11) {
+            // if (result.attributes.length == 0) {
+            //     await sendText(sender_psid, "It have only the global attributes");
+            // } else if (result.attributes.length <= 11) {
 
-                let response = {
-                    "text": "Choose Attribute You want",
-                    "quick_replies": []
-                }
+            //     let response = {
+            //         "text": "Choose Attribute You want",
+            //         "quick_replies": []
+            //     }
 
-                for (var i = 0; i < result.attributes.length; i++) {
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.attributes[i].name,
-                        "payload": JSON.stringify({
-                            action: "queryAttributeFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            attribute: result.attributes[i].name
-                        })
-                    });
-                }
+            //     for (var i = 0; i < result.attributes.length; i++) {
+            //         response.quick_replies.push({
+            //             "content_type": "text",
+            //             "title": result.attributes[i].name,
+            //             "payload": JSON.stringify({
+            //                 action: "queryAttributeFromTag",
+            //                 language: "html",
+            //                 keyword: payload.keyword,
+            //                 attribute: result.attributes[i].name
+            //             })
+            //         });
+            //     }
 
-                await callSendMessageAPI(sender_psid, response); 
+            //     await callSendMessageAPI(sender_psid, response); 
                 
-            }else if (result.attributes.length > 11) {
-                let response = {
-                    "text": "Choose Attribute You want",
-                    "quick_replies": []
+            // }else if (result.attributes.length > 11) {
+            //     let response = {
+            //         "text": "Choose Attribute You want",
+            //         "quick_replies": []
+            //     }
+
+            //     for (var i = 0; i < 10; i++) {
+            //         response.quick_replies.push({
+            //             "content_type": "text",
+            //             "title": result.attributes[i].name,
+            //             "payload": JSON.stringify({
+            //                 action: "queryAttributeFromTag",
+            //                 language: "html",
+            //                 keyword: payload.keyword,
+            //                 attribute: result.attributes[i].name
+            //             })
+            //         });
+            //     }
+
+            //     response.quick_replies.push({
+            //         "content_type": "text",
+            //         "title": "more",
+            //         "payload": JSON.stringify({
+            //             action: "listAttributeFromTag",
+            //             language: "html",
+            //             keyword: payload.keyword,
+            //             startAt: 10,
+            //         })
+            //     });
+
+            let response = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                    "template_type": "list",
+                    "top_element_style": "compact",
+                    "elements": [
+                        {
+                        "title": "Classic T-Shirt Collection",
+                        "subtitle": "See all our colors",
+                        "image_url": "https://peterssendreceiveapp.ngrok.io/img/collection.png",          
+                        "buttons": [
+                            {
+                            "title": "View",
+                            "type": "web_url",
+                            "url": "https://peterssendreceiveapp.ngrok.io/collection",
+                            "messenger_extensions": true,
+                            "webview_height_ratio": "tall",
+                            "fallback_url": "https://peterssendreceiveapp.ngrok.io/"            
+                            }
+                        ]
+                        },
+                        {
+                        "title": "Classic White T-Shirt",
+                        "subtitle": "See all our colors",
+                        "default_action": {
+                            "type": "web_url",
+                            "url": "https://peterssendreceiveapp.ngrok.io/view?item=100",
+                            "messenger_extensions": true,
+                            "webview_height_ratio": "tall",
+                            "fallback_url": "https://peterssendreceiveapp.ngrok.io/"
+                        }
+                        },
+                        {
+                        "title": "Classic Blue T-Shirt",
+                        "image_url": "https://peterssendreceiveapp.ngrok.io/img/blue-t-shirt.png",
+                        "subtitle": "100% Cotton, 200% Comfortable",
+                        "default_action": {
+                            "type": "web_url",
+                            "url": "https://peterssendreceiveapp.ngrok.io/view?item=101",
+                            "messenger_extensions": true,
+                            "webview_height_ratio": "tall",
+                            "fallback_url": "https://peterssendreceiveapp.ngrok.io/"
+                        },
+                        "buttons": [
+                            {
+                            "title": "Shop Now",
+                            "type": "web_url",
+                            "url": "https://peterssendreceiveapp.ngrok.io/shop?item=101",
+                            "messenger_extensions": true,
+                            "webview_height_ratio": "tall",
+                            "fallback_url": "https://peterssendreceiveapp.ngrok.io/"            
+                            }
+                        ]        
+                        }
+                    ],
+                        "buttons": [
+                        {
+                        "title": "View More",
+                        "type": "postback",
+                        "payload": "payload"            
+                        }
+                    ]  
+                    }
                 }
-
-                for (var i = 0; i < 10; i++) {
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.attributes[i].name,
-                        "payload": JSON.stringify({
-                            action: "queryAttributeFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            attribute: result.attributes[i].name
-                        })
-                    });
-                }
-
-                response.quick_replies.push({
-                    "content_type": "text",
-                    "title": "more",
-                    "payload": JSON.stringify({
-                        action: "listAttributeFromTag",
-                        language: "html",
-                        keyword: payload.keyword,
-                        startAt: 10,
-                    })
-                });
-
+            }
 
                 await callSendMessageAPI(sender_psid, response); 
 
