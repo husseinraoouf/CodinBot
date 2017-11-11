@@ -465,10 +465,12 @@ const start = async () => {
 
                     } else {
 
-                        const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language });
+                        console.log("yes");
+
                         
                         if (result.tags.length == 1) {
-
+                            
+                            const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language });
                             
                             var re = "";
                             
@@ -480,6 +482,8 @@ const start = async () => {
                                 }
                             }
                             
+                            console.log("re:  " + re);
+
                             re = re.split("\\n");
             
                             for (var i in re) {
