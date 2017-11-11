@@ -249,6 +249,15 @@ const start = async () => {
                     }
                 }
 
+
+                var hash;
+                
+                if (re.title) {
+                    hash = re.title.replace(/ /g, '_')
+                } else {
+                    hash = "Examples";
+                }
+                
                 var ourresponse = {
                     "attachment":{
                         "type":"template",
@@ -258,7 +267,7 @@ const start = async () => {
                         "buttons":[
                                 {
                                     "type":"web_url",
-                                    "url": "https://codingbot.herokuapp.com/",
+                                    "url": result.link+"#"+hash,
                                     "title": "More Details",
                                     "webview_height_ratio": "tall"
                                 }
@@ -381,6 +390,7 @@ const start = async () => {
                                         "title": "examples",
                                         "payload": JSON.stringify({
                                             action: "listExamples",
+                                            language: response.result.parameters.language,
                                             keyword: response.result.parameters.keyword
                                         })
                                     },
@@ -389,6 +399,7 @@ const start = async () => {
                                         "title": "attributes",
                                         "payload": JSON.stringify({
                                             action: "listAttributes",
+                                            language: response.result.parameters.language,
                                             keyword: response.result.parameters.keyword
                                         })
                                     }
@@ -497,30 +508,8 @@ const start = async () => {
             })
 
             await DB.userDB.adduser(sender_psid, body.first_name);                    
-            await sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding");
-            
-            const response = {
-                "text": "Please tell me what programming language you want to know \u000Aunfortunately we only support Html and Css for now But we want to expand to other language in the future",
-                "quick_replies": [
-                    {
-                        "content_type": "text",
-                        "title": "html",
-                        "payload": JSON.stringify({
-                            action: "setDefaultLang",
-                            language: "html"
-                        })
-                    },
-                    {
-                        "content_type": "text",
-                        "title": "css",
-                        "payload": JSON.stringify({
-                            action: "setDefaultLang",
-                            language: "css"
-                        })
-                    }
-                ]
-            }
-            await callSendMessageAPI(sender_psid, response); 
+            await sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding\u000ACurrntly I we only support HTML/CSS But We will support more languages in the future");
+        
         } else if (payload === 'yes') {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
@@ -529,7 +518,7 @@ const start = async () => {
 
             await typeOn(sender_psid);
             
-            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
+            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
                                             
             if (result.attributes.length == 0) {
                 await sendText(sender_psid, "It have only the global attributes");
@@ -613,6 +602,14 @@ const start = async () => {
                     }
                 }
 
+                var hash;
+
+                if (re.title) {
+                    hash = re.title.replace(/ /g, '_')
+                } else {
+                    hash = "Examples";
+                }
+
                 var ourresponse = {
                     "attachment":{
                         "type":"template",
@@ -622,7 +619,7 @@ const start = async () => {
                         "buttons":[
                                 {
                                     "type":"web_url",
-                                    "url": "https://codingbot.herokuapp.com/",
+                                    "url": result.link+"#"+hash,
                                     "title": "More Details",
                                     "webview_height_ratio": "tall"
                                 }
