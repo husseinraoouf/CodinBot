@@ -241,7 +241,7 @@ const start = async () => {
                 }
 
                 if (re.detail) {
-                    var response = re.split("\\n");
+                    var response = re.detail.split("\\n");
                     for (var i in response) {
                         if (response[i].length > 1) {
                             await sendText(sender_psid, response[i]);
