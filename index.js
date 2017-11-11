@@ -250,7 +250,7 @@ const start = async () => {
                 }
 
 
-                console.log("`````html\u000A" + re.code.replace(/\\n/g, '\u000A');
+                console.log("`````html\u000A" + re.code.replace(/\\n/g, '\u000A'));
 
 
                 var ourresponse = {
