@@ -678,7 +678,7 @@ const start = async () => {
             if (re.code.length < 635){
                 code = "```html\u000A" + re.code.replace(/\\n/g, '\u000A');
             } else {
-                code = "```html\u000A" + re.code.substring(0, 620).replace(/\\n/g, '\u000A') + "Continue";
+                code = "```html\u000A" + re.code.substring(0, 605).replace(/\\n/g, '\u000A') + "\u000APlease Continue From More Details";
             }
 
             var ourresponse = {
@@ -801,7 +801,7 @@ const start = async () => {
         if (re.code.length < 635){
             code = "```html\u000A" + re.code.replace(/\\n/g, '\u000A');
         } else {
-            code = "```html\u000A" + re.code.substring(0, 620).replace(/\\n/g, '\u000A') + "Continue";
+            code = "```html\u000A" + re.code.substring(0, 605).replace(/\\n/g, '\u000A') + "\u000APlease Continue From More Details";
         }
 
         var ourresponse = {
