@@ -673,26 +673,38 @@ const start = async () => {
                 }
             }
 
-            var ourresponse = {
-                "attachment":{
-                    "type":"template",
-                    "payload":{
-                    "template_type":"button",
-                    "text": "```html\u000A" + re.code.replace(/\\n/g, '\u000A'),
-                    "buttons":[
-                            {
-                                "type":"web_url",
-                                "url": re.link,
-                                "title": "More Details",
-                                "webview_height_ratio": "tall"
+            if (re.code) {
+
+                var response = re.code.split("\n\n");
+                for (var i in response) {
+
+                    if (i == response.length-1) {
+                        var ourresponse = {
+                            "attachment":{
+                                "type":"template",
+                                "payload":{
+                                "template_type":"button",
+                                "text": "```html\u000A" + response[i].replace(/\\n/g, '\u000A'),
+                                "buttons":[
+                                        {
+                                            "type":"web_url",
+                                            "url": re.link,
+                                            "title": "More Details",
+                                            "webview_height_ratio": "tall"
+                                        }
+                                    ]
+                                }
                             }
-                        ]
+                        }
+
+                        // Send the response message
+                        await callSendMessageAPI(sender_psid, ourresponse);
+                    } else {
+                        await sendText(sender_psid, "```html\u000A" + response[i].replace(/\\n/g, '\u000A'));
                     }
+
                 }
             }
-
-            // Send the response message
-            await callSendMessageAPI(sender_psid, ourresponse);
 
 
             if (re.note) {
@@ -787,26 +799,38 @@ const start = async () => {
         }
 
 
-        var ourresponse = {
-            "attachment":{
-                "type":"template",
-                "payload":{
-                "template_type":"button",
-                "text": "```html\u000A" + re.code.replace(/\\n/g, '\u000A'),
-                "buttons":[
-                        {
-                            "type":"web_url",
-                            "url": re.link,
-                            "title": "More Details",
-                            "webview_height_ratio": "tall"
+        if (re.code) {
+            
+            var response = re.code.split("\n\n");
+            for (var i in response) {
+
+                if (i == response.length-1) {
+                    var ourresponse = {
+                        "attachment":{
+                            "type":"template",
+                            "payload":{
+                            "template_type":"button",
+                            "text": "```html\u000A" + response[i].replace(/\\n/g, '\u000A'),
+                            "buttons":[
+                                    {
+                                        "type":"web_url",
+                                        "url": re.link,
+                                        "title": "More Details",
+                                        "webview_height_ratio": "tall"
+                                    }
+                                ]
+                            }
                         }
-                    ]
+                    }
+
+                    // Send the response message
+                    await callSendMessageAPI(sender_psid, ourresponse);
+                } else {
+                    await sendText(sender_psid, "```html\u000A" + response[i].replace(/\\n/g, '\u000A'));
                 }
+
             }
         }
-
-        // Send the response message
-        await callSendMessageAPI(sender_psid, ourresponse);
 
 
         if (re.note) {
