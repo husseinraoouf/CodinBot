@@ -164,11 +164,30 @@ const start = async () => {
                         "quick_replies": []
                     }
     
+
+                    
+
+
                     for (var i = payload.startAt; i < result.attributes.length; i++) {
+                        var img = null;
+                        
+                        if (result.attributes[i].status == "obsolete"){
+                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                        } else if (result.attributes[i].status == "html5") {
+                            img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                        } else if (result.attributes[i].status == "deprecated") {
+                            img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                        } else if (result.attributes[i].status == "not standardized") {
+                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                        } else if (result.attributes[i].status == "experimental") {
+                            img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                        }
+
+
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
+                            "image_url": img,
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -187,10 +206,26 @@ const start = async () => {
                     }
     
                     for (var i = payload.startAt; i < payload.startAt + 10; i++) {
+
+                        var img = null;
+                        
+                        if (result.attributes[i].status == "obsolete"){
+                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                        } else if (result.attributes[i].status == "html5") {
+                            img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                        } else if (result.attributes[i].status == "deprecated") {
+                            img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                        } else if (result.attributes[i].status == "not standardized") {
+                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                        } else if (result.attributes[i].status == "experimental") {
+                            img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                        }
+
+
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
+                            "image_url":img,
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -290,7 +325,6 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.examples[i].title,
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryExampleFromTag",
                                 language: "html",
@@ -312,7 +346,6 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.examples[i].title,
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryExampleFromTag",
                                 language: "html",
@@ -350,10 +383,10 @@ const start = async () => {
                     }
     
                     for (var i = payload.startAt; i < result.tags.length; i++) {
+
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.tags[i],
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -375,7 +408,6 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.tags[i],
-                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -670,10 +702,26 @@ const start = async () => {
                 }
 
                 for (var i = 0; i < result.attributes.length; i++) {
+
+                    var img = null;
+                    
+                    if (result.attributes[i].status == "obsolete"){
+                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                    } else if (result.attributes[i].status == "html5") {
+                        img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                    } else if (result.attributes[i].status == "deprecated") {
+                        img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                    } else if (result.attributes[i].status == "not standardized") {
+                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                    } else if (result.attributes[i].status == "experimental") {
+                        img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                    }
+
+
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.attributes[i].name,
-                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
+                        "image_url": img,
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
@@ -692,10 +740,26 @@ const start = async () => {
                 }
 
                 for (var i = 0; i < 10; i++) {
+
+
+                    var img = null;
+                    
+                    if (result.attributes[i].status == "obsolete"){
+                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                    } else if (result.attributes[i].status == "html5") {
+                        img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                    } else if (result.attributes[i].status == "deprecated") {
+                        img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                    } else if (result.attributes[i].status == "not standardized") {
+                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                    } else if (result.attributes[i].status == "experimental") {
+                        img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                    }
+
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.attributes[i].name,
-                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
+                        "image_url": img,
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
@@ -786,7 +850,6 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.examples[i].title,
-                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryExampleFromTag",
                             language: "html",
@@ -808,7 +871,6 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.examples[i].title,
-                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryExampleFromTag",
                             language: "html",
