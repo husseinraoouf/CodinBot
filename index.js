@@ -673,8 +673,6 @@ const start = async () => {
                 }
             }
 
-            console.log(re.code.replace(/\\n/g, '\u000A'), re.code.replace(/\\n/g, '\u000A').length);
-
             var ourresponse = {
                 "attachment":{
                     "type":"template",
