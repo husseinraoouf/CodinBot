@@ -162,7 +162,7 @@ const start = async () => {
                 
                 await typeOn(sender_psid);
                 
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
+                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language, keywordkind: "attribute"  });
                                                 
                 if (result.tags.length - payload.startAt <= 11) {
     
@@ -285,12 +285,9 @@ const start = async () => {
 
                     } else {
 
-                        console.log("yes: "+ response.result.parameters);
-
-                        
                         if (result.tags.length == 1) {
                             
-                            const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language });
+                            const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language, keywordkind: "tag" });
                             
                             var re = "";
                             
@@ -372,32 +369,6 @@ const start = async () => {
                     }
 
                     // Send the response message
-                    await typeOff(sender_psid);
-                } else if (response.result.action == "queryAttribute"){
-                    console.log(response.result.parameters);                            
-                    await typeOn(sender_psid);
-
-                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
-                    
-                
-                    var re = "";
-                    
-                    for (var i = 0; i < result.attributes.length; i++) {
-                        console.log(result.attributes[i].name)
-                        if(result.attributes[i].name == response.result.parameters.attributeName) {
-                            re = result.attributes[i].detail;
-                            break;
-                        }
-                    }
-                    
-                    re = re.split("\n");
-
-                    for (var i in re) {
-                        if (re[i].length > 1) {
-                            await sendText(sender_psid, re[i]);
-                        }
-                    }
-
                     await typeOff(sender_psid);
                 } else {
                     // Send the response message
@@ -559,7 +530,7 @@ const start = async () => {
 
 
     async function queryAttributeFromTag(tag, attribute) {
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
         
         var re = "";
         
@@ -583,7 +554,7 @@ const start = async () => {
 
     async function listAttributeFromTag(tag, startAt) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
         
         if (startAt == 0 && result.attributes.length == 0) {
             await sendText(sender_psid, "It have only the global attributes");            
@@ -685,7 +656,7 @@ const start = async () => {
 
     async function listExampleFromTag(tag, startAt) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
 
         if (startAt == 0 && result.examples.length == 0) {
             await sendText(sender_psid, "It have no example");
@@ -795,7 +766,7 @@ const start = async () => {
 
     async function queryExampleFromTag(tag, example) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
                 
         var re;
         

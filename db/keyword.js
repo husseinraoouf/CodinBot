@@ -12,9 +12,9 @@ module.exports = ({ Keywords, Users }) => {
     }
 
 
-    methods.getKeyword = async ({ language, keyword }) => {
+    methods.getKeyword = async ({ language, keyword, keywordkind }) => {
         const response = await Keywords.findOne(
-            { keyword, language }
+            { keyword, language, keywordkind }
         );
 
         return response;
