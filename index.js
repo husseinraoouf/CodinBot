@@ -126,249 +126,38 @@ const start = async () => {
             let payload = JSON.parse(received_message.quick_reply.payload);
             
             if (payload.action == "queryAttributeFromTag") {
-                
+
                 await typeOn(sender_psid);
-
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
-                            
-                var re = "";
                 
-                for (var i = 0; i < result.attributes.length; i++) {
-                    console.log(result.attributes[i].name)
-                    if(result.attributes[i].name == payload.attribute) {
-                        re = result.attributes[i].detail;
-                        break;
-                    }
-                }
+                await queryAttributeFromTag(payload.keyword, payload.attribute);
                 
-                re = re.split("\n");
-
-                for (var i in re) {
-                    if (re[i].length > 1) {
-                        await sendText(sender_psid, re[i]);
-                    }
-                }
-
                 await typeOff(sender_psid);
-
+                
             } else if (payload.action == "listAttributeFromTag") {
                 
                 await typeOn(sender_psid);
                 
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
-                                                
-                if (result.attributes.length - payload.startAt <= 11) {
-    
-                    let response = {
-                        "text": "Choose Attribute You want",
-                        "quick_replies": []
-                    }
-    
+                listAttributeFromTag(payload.keyword, payload.startAt)
 
-                    
-
-
-                    for (var i = payload.startAt; i < result.attributes.length; i++) {
-                        var img = null;
-                        
-                        if (result.attributes[i].status == "obsolete"){
-                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
-                        } else if (result.attributes[i].status == "html5") {
-                            img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
-                        } else if (result.attributes[i].status == "deprecated") {
-                            img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
-                        } else if (result.attributes[i].status == "not standardized") {
-                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
-                        } else if (result.attributes[i].status == "experimental") {
-                            img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
-                        }
-
-
-                        response.quick_replies.push({
-                            "content_type": "text",
-                            "title": result.attributes[i].name,
-                            "image_url": img,
-                            "payload": JSON.stringify({
-                                action: "queryAttributeFromTag",
-                                language: "html",
-                                keyword: payload.keyword,
-                                attribute: result.attributes[i].name
-                            })
-                        });
-                    }
-    
-                    await callSendMessageAPI(sender_psid, response); 
-                    
-                } else if (result.attributes.length - payload.startAt > 11) {
-                    let response = {
-                        "text": "Choose Attribute You want",
-                        "quick_replies": []
-                    }
-    
-                    for (var i = payload.startAt; i < payload.startAt + 10; i++) {
-
-                        var img = null;
-                        
-                        if (result.attributes[i].status == "obsolete"){
-                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
-                        } else if (result.attributes[i].status == "html5") {
-                            img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
-                        } else if (result.attributes[i].status == "deprecated") {
-                            img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
-                        } else if (result.attributes[i].status == "not standardized") {
-                            img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
-                        } else if (result.attributes[i].status == "experimental") {
-                            img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
-                        }
-
-
-                        response.quick_replies.push({
-                            "content_type": "text",
-                            "title": result.attributes[i].name,
-                            "image_url":img,
-                            "payload": JSON.stringify({
-                                action: "queryAttributeFromTag",
-                                language: "html",
-                                keyword: payload.keyword,
-                                attribute: result.attributes[i].name
-                            })
-                        });
-                    }
-    
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": "more",
-                        "payload": JSON.stringify({
-                            action: "listAttributeFromTag",
-                            language: payload.language,
-                            keyword: payload.keyword,
-                            startAt: payload.startAt+10,
-                        })
-                    });
-    
-    
-                    await callSendMessageAPI(sender_psid, response); 
-                }
+                await typeOff(sender_psid);
+                
+                
             } else if (payload.action == "queryExampleFromTag") {
                 
                 await typeOn(sender_psid);
 
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
-                            
-                var re;
+                await queryExampleFromTag(payload.keyword, payload.example);
                 
-                for (var i = 0; i < result.attributes.length; i++) {
-                    console.log(result.attributes[i].name)
-                    if(result.examples[i].title == payload.example) {
-                        re = result.examples[i]
-                        break;
-                    }
-                }
-
-                if (re.detail) {
-                    var response = re.detail.split("\n");
-                    for (var i in response) {
-                        if (response[i].length > 1) {
-                            await sendText(sender_psid, response[i]);
-                        }
-                    }
-                }
-
-
-                var ourresponse = {
-                    "attachment":{
-                        "type":"template",
-                        "payload":{
-                        "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
-                        "buttons":[
-                                {
-                                    "type":"web_url",
-                                    "url": re.link,
-                                    "title": "More Details",
-                                    "webview_height_ratio": "tall"
-                                }
-                            ]
-                        }
-                    }
-                }
-
-                // Send the response message
-                await callSendMessageAPI(sender_psid, ourresponse);
-
-
-                if (re.note) {
-                    var response = re.note.split("\n");
-                    for (var i in response) {
-                        if (response[i].length > 1) {
-                            await sendText(sender_psid, response[i]);
-                        }
-                    }
-                }
-
                 await typeOff(sender_psid);
 
             } else if (payload.action == "listExampleFromTag") {
                 
                 await typeOn(sender_psid);
+
+                listExampleFromTag(payload.keyword, payload.startAt)
                 
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
-                                                
-                if (result.examples.length - payload.startAt <= 11) {
-    
-                    let response = {
-                        "text": "Choose example You want",
-                        "quick_replies": []
-                    }
-    
-                    for (var i = payload.startAt; i < result.examples.length; i++) {
-                        response.quick_replies.push({
-                            "content_type": "text",
-                            "title": result.examples[i].title,
-                            "payload": JSON.stringify({
-                                action: "queryExampleFromTag",
-                                language: "html",
-                                keyword: payload.keyword,
-                                example: result.examples[i].title
-                            })
-                        });
-                    }
-    
-                    await callSendMessageAPI(sender_psid, response); 
-                    
-                } else if (result.examples.length - payload.startAt > 11) {
-                    let response = {
-                        "text": "Choose example You want",
-                        "quick_replies": []
-                    }
-    
-                    for (var i = payload.startAt; i < payload.startAt + 10; i++) {
-                        response.quick_replies.push({
-                            "content_type": "text",
-                            "title": result.examples[i].title,
-                            "payload": JSON.stringify({
-                                action: "queryExampleFromTag",
-                                language: "html",
-                                keyword: payload.keyword,
-                                example: result.examples[i].title
-                            })
-                        });
-                    }
-    
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": "more",
-                        "payload": JSON.stringify({
-                            action: "listExampleFromTag",
-                            language: payload.language,
-                            keyword: payload.keyword,
-                            startAt: payload.startAt+10,
-                        })
-                    });
-    
-    
-                    await callSendMessageAPI(sender_psid, response); 
-                }
+                await typeOff(sender_psid);                    
+                
             } else if (payload.action == "listTagsFromAttribute") {
                 
                 await typeOn(sender_psid);
@@ -473,7 +262,7 @@ const start = async () => {
                                             "type":"postback",
                                             "title": "examples",
                                             "payload": JSON.stringify({
-                                                action: "listExamples",
+                                                action: "listExampleFromTag",
                                                 language: response.result.parameters.language,
                                                 keyword: response.result.parameters.keyword
                                             })
@@ -482,7 +271,7 @@ const start = async () => {
                                             "type":"postback",
                                             "title": "attributes",
                                             "payload": JSON.stringify({
-                                                action: "listAttributes",
+                                                action: "listAttributeFromTag",
                                                 language: response.result.parameters.language,
                                                 keyword: response.result.parameters.keyword
                                             })
@@ -686,217 +475,21 @@ const start = async () => {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
             await sendText(sender_psid, "Oops, try sending another image.");
-        } else if (payload.action == 'listAttributes') {
+        } else if (payload.action == 'listAttributeFromTag') {
 
             await typeOn(sender_psid);
             
-            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language });
-                                            
-            if (result.attributes.length == 0) {
-                await sendText(sender_psid, "It have only the global attributes");
-            } else if (result.attributes.length <= 11) {
-
-                let response = {
-                    "text": "Choose Attribute You want",
-                    "quick_replies": []
-                }
-
-                for (var i = 0; i < result.attributes.length; i++) {
-
-                    var img = null;
-                    
-                    if (result.attributes[i].status == "obsolete"){
-                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
-                    } else if (result.attributes[i].status == "html5") {
-                        img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
-                    } else if (result.attributes[i].status == "deprecated") {
-                        img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
-                    } else if (result.attributes[i].status == "not standardized") {
-                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
-                    } else if (result.attributes[i].status == "experimental") {
-                        img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
-                    }
-
-
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.attributes[i].name,
-                        "image_url": img,
-                        "payload": JSON.stringify({
-                            action: "queryAttributeFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            attribute: result.attributes[i].name
-                        })
-                    });
-                }
-
-                await callSendMessageAPI(sender_psid, response); 
-                
-            }else if (result.attributes.length > 11) {
-                let response = {
-                    "text": "Choose Attribute You want",
-                    "quick_replies": []
-                }
-
-                for (var i = 0; i < 10; i++) {
-
-
-                    var img = null;
-                    
-                    if (result.attributes[i].status == "obsolete"){
-                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
-                    } else if (result.attributes[i].status == "html5") {
-                        img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
-                    } else if (result.attributes[i].status == "deprecated") {
-                        img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
-                    } else if (result.attributes[i].status == "not standardized") {
-                        img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
-                    } else if (result.attributes[i].status == "experimental") {
-                        img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
-                    }
-
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.attributes[i].name,
-                        "image_url": img,
-                        "payload": JSON.stringify({
-                            action: "queryAttributeFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            attribute: result.attributes[i].name
-                        })
-                    });
-                }
-
-                response.quick_replies.push({
-                    "content_type": "text",
-                    "title": "more",
-                    "payload": JSON.stringify({
-                        action: "listAttributeFromTag",
-                        language: "html",
-                        keyword: payload.keyword,
-                        startAt: 10,
-                    })
-                });
-
-
-                await callSendMessageAPI(sender_psid, response); 
-
-            }
+            await listAttributeFromTag(payload.keyword, 0);
 
             await typeOff(sender_psid);
 
-        }  else if (payload.action == 'listExamples') {
+        }  else if (payload.action == 'listExampleFromTag') {
 
             await typeOn(sender_psid);
             
-            const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: "html" });
-                                            
-            if (result.examples.length == 0) {
-                await sendText(sender_psid, "It have no example");
-            } else if (result.examples.length == 1) {
-                                            
-                var re = result.examples[0];
-                
-                if (re.detail) {
-                    var response = re.detail.split("\n");
-                    for (var i in response) {
-                        if (response[i].length > 1) {
-                            await sendText(sender_psid, response[i]);
-                        }
-                    }
-                }
-
-                var ourresponse = {
-                    "attachment":{
-                        "type":"template",
-                        "payload":{
-                        "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
-                        "buttons":[
-                                {
-                                    "type":"web_url",
-                                    "url": re.link,
-                                    "title": "More Details",
-                                    "webview_height_ratio": "tall"
-                                }
-                            ]
-                        }
-                    }
-                }
-
-                // Send the response message
-                await callSendMessageAPI(sender_psid, ourresponse);
-
-
-                if (re.note) {
-                    var response = re.note.split("\n");
-                    for (var i in response) {
-                        if (response[i].length > 1) {
-                            await sendText(sender_psid, response[i]);
-                        }
-                    }
-                }            
+            listExampleFromTag(payload.keyword, 0)
             
-            } else if (result.examples.length <= 11) {
-
-                let response = {
-                    "text": "Choose example You want",
-                    "quick_replies": []
-                }
-
-                for (var i = 0; i < result.examples.length; i++) {
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.examples[i].title,
-                        "payload": JSON.stringify({
-                            action: "queryExampleFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            example: result.examples[i].title
-                        })
-                    });
-                }
-
-                await callSendMessageAPI(sender_psid, response); 
-                
-            } else if (result.examples.length > 11) {
-                let response = {
-                    "text": "Choose example You want",
-                    "quick_replies": []
-                }
-
-                for (var i = 0; i < 10; i++) {
-                    response.quick_replies.push({
-                        "content_type": "text",
-                        "title": result.examples[i].title,
-                        "payload": JSON.stringify({
-                            action: "queryExampleFromTag",
-                            language: "html",
-                            keyword: payload.keyword,
-                            example: result.examples[i].title
-                        })
-                    });
-                }
-
-                response.quick_replies.push({
-                    "content_type": "text",
-                    "title": "more",
-                    "payload": JSON.stringify({
-                        action: "listExampleFromTag",
-                        language: "html",
-                        keyword: payload.keyword,
-                        startAt: 10,
-                    })
-                });
-
-
-                await callSendMessageAPI(sender_psid, response); 
-
-            }
-
-            await typeOff(sender_psid);
+            await typeOff(sender_psid); 
 
         }
     }
@@ -963,6 +556,297 @@ const start = async () => {
         await callSendMessageAPI(sender_psid, response);
     }
     
+
+
+    async function queryAttributeFromTag(tag, attribute) {
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        
+        var re = "";
+        
+        for (var i = 0; i < result.attributes.length; i++) {
+            console.log(result.attributes[i].name)
+            if(result.attributes[i].name == attribute) {
+                re = result.attributes[i].detail;
+                break;
+            }
+        }
+        
+        re = re.split("\n");
+
+        for (var i in re) {
+            if (re[i].length > 1) {
+                await sendText(sender_psid, re[i]);
+            }
+        }    
+    
+    }
+
+    async function listAttributeFromTag(tag, startAt) {
+
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+        
+        if (startAt == 0 && result.attributes.length == 0) {
+            await sendText(sender_psid, "It have only the global attributes");            
+        } else if (result.attributes.length - startAt <= 11) {
+
+            let response = {
+                "text": "Choose Attribute You want",
+                "quick_replies": []
+            }
+
+
+            
+
+
+            for (var i = startAt; i < result.attributes.length; i++) {
+                var img = null;
+                
+                if (result.attributes[i].status == "obsolete"){
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                } else if (result.attributes[i].status == "html5") {
+                    img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                } else if (result.attributes[i].status == "deprecated") {
+                    img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                } else if (result.attributes[i].status == "not standardized") {
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                } else if (result.attributes[i].status == "experimental") {
+                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                }
+
+
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": result.attributes[i].name,
+                    "image_url": img,
+                    "payload": JSON.stringify({
+                        action: "queryAttributeFromTag",
+                        language: "html",
+                        keyword: tag,
+                        attribute: result.attributes[i].name
+                    })
+                });
+            }
+
+            await callSendMessageAPI(sender_psid, response); 
+            
+        } else if (result.attributes.length - startAt > 11) {
+            let response = {
+                "text": "Choose Attribute You want",
+                "quick_replies": []
+            }
+
+            for (var i = startAt; i < startAt + 10; i++) {
+
+                var img = null;
+                
+                if (result.attributes[i].status == "obsolete"){
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
+                } else if (result.attributes[i].status == "html5") {
+                    img = "https://html5hive.org/wp-content/uploads/2014/05/a-guide-to-html5-and-css3-379x284.png?x30206";
+                } else if (result.attributes[i].status == "deprecated") {
+                    img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
+                } else if (result.attributes[i].status == "not standardized") {
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                } else if (result.attributes[i].status == "experimental") {
+                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                }
+
+
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": result.attributes[i].name,
+                    "image_url":img,
+                    "payload": JSON.stringify({
+                        action: "queryAttributeFromTag",
+                        language: "html",
+                        keyword: tag,
+                        attribute: result.attributes[i].name
+                    })
+                });
+            }
+
+            response.quick_replies.push({
+                "content_type": "text",
+                "title": "more",
+                "payload": JSON.stringify({
+                    action: "listAttributeFromTag",
+                    language: "html",
+                    keyword: tag,
+                    startAt: startAt+10,
+                })
+            });
+
+
+            await callSendMessageAPI(sender_psid, response); 
+        }
+        
+    }
+
+
+    async function listExampleFromTag(tag, startAt) {
+
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+
+        if (startAt == 0 && result.examples.length == 0) {
+            await sendText(sender_psid, "It have no example");
+        } else if (startAt == 0 && result.examples.length == 1) {
+                                        
+            var re = result.examples[0];
+            
+            if (re.detail) {
+                var response = re.detail.split("\n");
+                for (var i in response) {
+                    if (response[i].length > 1) {
+                        await sendText(sender_psid, response[i]);
+                    }
+                }
+            }
+
+            var ourresponse = {
+                "attachment":{
+                    "type":"template",
+                    "payload":{
+                    "template_type":"button",
+                    "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                    "buttons":[
+                            {
+                                "type":"web_url",
+                                "url": re.link,
+                                "title": "More Details",
+                                "webview_height_ratio": "tall"
+                            }
+                        ]
+                    }
+                }
+            }
+
+            // Send the response message
+            await callSendMessageAPI(sender_psid, ourresponse);
+
+
+            if (re.note) {
+                var response = re.note.split("\n");
+                for (var i in response) {
+                    if (response[i].length > 1) {
+                        await sendText(sender_psid, response[i]);
+                    }
+                }
+            }            
+        
+        } else if (result.examples.length - startAt <= 11) {
+
+            let response = {
+                "text": "Choose example You want",
+                "quick_replies": []
+            }
+
+            for (var i = startAt; i < result.examples.length; i++) {
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": result.examples[i].title,
+                    "payload": JSON.stringify({
+                        action: "queryExampleFromTag",
+                        language: "html",
+                        keyword: tag,
+                        example: result.examples[i].title
+                    })
+                });
+            }
+
+            await callSendMessageAPI(sender_psid, response); 
+        
+        } else if (result.examples.length - startAt > 11) {
+            let response = {
+                "text": "Choose example You want",
+                "quick_replies": []
+            }
+
+            for (var i = startAt; i < startAt + 10; i++) {
+                response.quick_replies.push({
+                    "content_type": "text",
+                    "title": result.examples[i].title,
+                    "payload": JSON.stringify({
+                        action: "queryExampleFromTag",
+                        language: "html",
+                        keyword: tag,
+                        example: result.examples[i].title
+                    })
+                });
+            }
+
+            response.quick_replies.push({
+                "content_type": "text",
+                "title": "more",
+                "payload": JSON.stringify({
+                    action: "listExampleFromTag",
+                    language: "html",
+                    keyword: tag,
+                    startAt: startAt+10,
+                })
+            });
+
+
+            await callSendMessageAPI(sender_psid, response); 
+        }
+
+
+    }
+
+
+    async function queryExampleFromTag(tag, example) {
+
+        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html" });
+                
+        var re;
+        
+        for (var i = 0; i < result.examples.length; i++) {
+            if(result.examples[i].title == example) {
+                re = result.examples[i]
+                break;
+            }
+        }
+
+        if (re.detail) {
+            var response = re.detail.split("\n");
+            for (var i in response) {
+                if (response[i].length > 1) {
+                    await sendText(sender_psid, response[i]);
+                }
+            }
+        }
+
+
+        var ourresponse = {
+            "attachment":{
+                "type":"template",
+                "payload":{
+                "template_type":"button",
+                "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                "buttons":[
+                        {
+                            "type":"web_url",
+                            "url": re.link,
+                            "title": "More Details",
+                            "webview_height_ratio": "tall"
+                        }
+                    ]
+                }
+            }
+        }
+
+        // Send the response message
+        await callSendMessageAPI(sender_psid, ourresponse);
+
+
+        if (re.note) {
+            var response = re.note.split("\n");
+            for (var i in response) {
+                if (response[i].length > 1) {
+                    await sendText(sender_psid, response[i]);
+                }
+            }
+        }
+    }
 
     const PORT = process.argv[2] || 5000;
     app.listen(PORT, () => {
