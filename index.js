@@ -168,6 +168,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -189,6 +190,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.attributes[i].name,
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -288,6 +290,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.examples[i].title,
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryExampleFromTag",
                                 language: "html",
@@ -309,6 +312,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.examples[i].title,
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryExampleFromTag",
                                 language: "html",
@@ -349,6 +353,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.tags[i],
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -370,6 +375,7 @@ const start = async () => {
                         response.quick_replies.push({
                             "content_type": "text",
                             "title": result.tags[i],
+                            "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                             "payload": JSON.stringify({
                                 action: "queryAttributeFromTag",
                                 language: "html",
@@ -667,6 +673,7 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.attributes[i].name,
+                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
@@ -688,6 +695,7 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.attributes[i].name,
+                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryAttributeFromTag",
                             language: "html",
@@ -778,6 +786,7 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.examples[i].title,
+                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryExampleFromTag",
                             language: "html",
@@ -799,6 +808,7 @@ const start = async () => {
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": result.examples[i].title,
+                        "image_url":"https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png",
                         "payload": JSON.stringify({
                             action: "queryExampleFromTag",
                             language: "html",
