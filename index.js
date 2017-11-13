@@ -229,7 +229,7 @@ const start = async () => {
                 }
 
                 if (re.detail) {
-                    var response = re.detail.split("\\n");
+                    var response = re.detail.split("\n");
                     for (var i in response) {
                         if (response[i].length > 1) {
                             await sendText(sender_psid, response[i]);
@@ -238,24 +238,16 @@ const start = async () => {
                 }
 
 
-                var hash;
-                
-                if (re.title) {
-                    hash = re.title.replace(/ /g, '_')
-                } else {
-                    hash = "Examples";
-                }
-                
                 var ourresponse = {
                     "attachment":{
                         "type":"template",
                         "payload":{
                         "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                        "text": "`````html\u000A" + re.code.replace(/\n/g, '\u000A'),
                         "buttons":[
                                 {
                                     "type":"web_url",
-                                    "url": result.link+"#"+hash,
+                                    "url": re.link,
                                     "title": "More Details",
                                     "webview_height_ratio": "tall"
                                 }
@@ -269,7 +261,7 @@ const start = async () => {
 
 
                 if (re.note) {
-                    var response = re.note.split("\\n");
+                    var response = re.note.split("\n");
                     for (var i in response) {
                         if (response[i].length > 1) {
                             await sendText(sender_psid, response[i]);
@@ -485,7 +477,7 @@ const start = async () => {
                             
                             console.log("re:  " + re);
 
-                            re = re.split("\\n");
+                            re = re.split("\n");
             
                             for (var i in re) {
                                 if (re[i].length > 1) {
@@ -571,7 +563,7 @@ const start = async () => {
                         }
                     }
                     
-                    re = re.split("\\n");
+                    re = re.split("\n");
 
                     for (var i in re) {
                         if (re[i].length > 1) {
@@ -736,7 +728,7 @@ const start = async () => {
                 var re = result.examples[0];
                 
                 if (re.detail) {
-                    var response = re.detail.split("\\n");
+                    var response = re.detail.split("\n");
                     for (var i in response) {
                         if (response[i].length > 1) {
                             await sendText(sender_psid, response[i]);
@@ -744,24 +736,16 @@ const start = async () => {
                     }
                 }
 
-                var hash;
-
-                if (re.title) {
-                    hash = re.title.replace(/ /g, '_')
-                } else {
-                    hash = "Examples";
-                }
-
                 var ourresponse = {
                     "attachment":{
                         "type":"template",
                         "payload":{
                         "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
+                        "text": "`````html\u000A" + re.code.replace(/\n/g, '\u000A'),
                         "buttons":[
                                 {
                                     "type":"web_url",
-                                    "url": result.link+"#"+hash,
+                                    "url": re.link,
                                     "title": "More Details",
                                     "webview_height_ratio": "tall"
                                 }
@@ -775,7 +759,7 @@ const start = async () => {
 
 
                 if (re.note) {
-                    var response = re.note.split("\\n");
+                    var response = re.note.split("\n");
                     for (var i in response) {
                         if (response[i].length > 1) {
                             await sendText(sender_psid, response[i]);
