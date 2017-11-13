@@ -280,7 +280,7 @@ const start = async () => {
                         "type":"template",
                         "payload":{
                         "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\n/g, '\u000A'),
+                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
                         "buttons":[
                                 {
                                     "type":"web_url",
@@ -813,7 +813,7 @@ const start = async () => {
                         "type":"template",
                         "payload":{
                         "template_type":"button",
-                        "text": "`````html\u000A" + re.code.replace(/\n/g, '\u000A'),
+                        "text": "`````html\u000A" + re.code.replace(/\\n/g, '\u000A'),
                         "buttons":[
                                 {
                                     "type":"web_url",
