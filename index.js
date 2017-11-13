@@ -129,7 +129,7 @@ const start = async () => {
 
                 await typeOn(sender_psid);
                 
-                await queryAttributeFromTag(payload.keyword, payload.attribute);
+                await queryAttributeFromTag(sender_psid, payload.keyword, payload.attribute);
                 
                 await typeOff(sender_psid);
                 
@@ -137,7 +137,7 @@ const start = async () => {
                 
                 await typeOn(sender_psid);
                 
-                listAttributeFromTag(payload.keyword, payload.startAt)
+                listAttributeFromTag(sender_psid, payload.keyword, payload.startAt)
 
                 await typeOff(sender_psid);
                 
@@ -146,7 +146,7 @@ const start = async () => {
                 
                 await typeOn(sender_psid);
 
-                await queryExampleFromTag(payload.keyword, payload.example);
+                await queryExampleFromTag(sender_psid, payload.keyword, payload.example);
                 
                 await typeOff(sender_psid);
 
@@ -154,7 +154,7 @@ const start = async () => {
                 
                 await typeOn(sender_psid);
 
-                listExampleFromTag(payload.keyword, payload.startAt)
+                listExampleFromTag(sender_psid, payload.keyword, payload.startAt)
                 
                 await typeOff(sender_psid);                    
                 
@@ -450,7 +450,7 @@ const start = async () => {
 
             await typeOn(sender_psid);
             
-            await listAttributeFromTag(payload.keyword, 0);
+            await listAttributeFromTag(sender_psid, payload.keyword, 0);
 
             await typeOff(sender_psid);
 
@@ -458,7 +458,7 @@ const start = async () => {
 
             await typeOn(sender_psid);
             
-            listExampleFromTag(payload.keyword, 0)
+            listExampleFromTag(sender_psid, payload.keyword, 0)
             
             await typeOff(sender_psid); 
 
@@ -529,7 +529,7 @@ const start = async () => {
     
 
 
-    async function queryAttributeFromTag(tag, attribute) {
+    async function queryAttributeFromTag(sender_psid, tag, attribute) {
         const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
         
         var re = "";
@@ -552,7 +552,7 @@ const start = async () => {
     
     }
 
-    async function listAttributeFromTag(tag, startAt) {
+    async function listAttributeFromTag(sender_psid, tag, startAt) {
 
         const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
         
@@ -654,7 +654,7 @@ const start = async () => {
     }
 
 
-    async function listExampleFromTag(tag, startAt) {
+    async function listExampleFromTag(sender_psid, tag, startAt) {
 
         const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
 
@@ -764,7 +764,7 @@ const start = async () => {
     }
 
 
-    async function queryExampleFromTag(tag, example) {
+    async function queryExampleFromTag(sender_psid, tag, example) {
 
         const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
                 
