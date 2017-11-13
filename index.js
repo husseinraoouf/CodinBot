@@ -141,7 +141,7 @@ const start = async () => {
                     }
                 }
                 
-                re = re.split("\\n");
+                re = re.split("\n");
 
                 for (var i in re) {
                     if (re[i].length > 1) {

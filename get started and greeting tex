@@ -19,7 +19,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 "thread_state":"new_thread",
 "call_to_actions":[
  {
-  "payload":"getstarted"
+  "payload":"{\"action\":\"getstarted\"}"
  }
 ]
 }' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAMCQLDgqWQBAOzEixL9Fbg95IzMRXjVsqTMJu0VyjCCHlsSAkBdml0sI6dMdu7sV5LjuAfYVKmc3YYZAdEXozgEaokFNTik40hKrK8g06sDqVrhPuulLt7ZCChKsGd7KCPy5W09cZAbj466ZCaPhuMbZBemd7ue57yDsunP9Hxj3nsVbgOtC"
