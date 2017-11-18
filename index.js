@@ -19,10 +19,6 @@ const start = async () => {
     app = express();
     app.use(bodyParser.json());
 
-
-    const result = await docsapi.getKeyword({ keyword: "href", language: "html", keywordkind: "attribute" }, "listTagsFromAttribute");
-
-
     // Adds support for GET requests to our webhook
     app.get('/webhook', (req, res) => {
 
@@ -208,7 +204,6 @@ const start = async () => {
             apiaiRequest.on('response', async function(response) {
 
                 if (response.result.action == "querySyntax"){
-                    console.log(response.result.parameters);
 
                     await typeOn(sender_psid);
 
