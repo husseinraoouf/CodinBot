@@ -4,9 +4,9 @@ const {
 
 
 module.exports = ({ Users }, { userByID }) => {
-    
+
     let methods = {}
-    
+
     methods.adduser = async (sender_psid, name) => {
 
       const response = await Users.insert(
@@ -19,7 +19,7 @@ module.exports = ({ Users }, { userByID }) => {
     }
 
     methods.setDefaultLang = async (sender_psid, lang) => {
-        
+
         const response = await Users.update(
             { sender_psid },
             { $set: { defaultlang: lang } }
@@ -29,6 +29,6 @@ module.exports = ({ Users }, { userByID }) => {
 
         return response;
     }
-    
+
     return methods;
 };

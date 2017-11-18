@@ -9,6 +9,7 @@ const
     cheerio = require("cheerio"),
     rp = require('request-promise-native'),
     connectDB = require('./db'),
+    docsapi = require('./lib/docsapi'),
     apiaiClient = apiai(APIAI_CLIENT, {language: "en", requestSource: "fb"});
 
 const start = async () => {
@@ -18,159 +19,130 @@ const start = async () => {
     app = express();
     app.use(bodyParser.json());
 
-    // app.set('view engine', 'pug')
-    // app.use(express.static('public'))
 
-    // app.get('/', async function (req, res) {
-
-    //     console.log(req.query);
-
-
-    //     const result = await DB.keywordDB.getKeyword(req.query);
-
-    //     // request({
-    //     //     uri: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else",
-    //     // }, function(error, response, body) {
-    //     //     var $ = cheerio.load(body);
-
-    //     //     // var x = $("article#wikiArticle");
-
-    //     //     console.log(x.html());
-    //     //     // var x = $(".answer .answercell .post-text").first();
-    //     //     // x.html(x.html().replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-    //     //     // x.find('pre').each(function () {
-    //     //     //     var qw = $(this);
-    //     //     //     qw.addClass('prettyprint');
-    //     //     // });
-    //     //     res.render('index', { title: result.title, message: result.body, code: x.html() })
-        
-    //     // });
-
-    //     console.log (result.difintion);
-    //     res.render('index', { title: result.keyword + " | " + result.language, difintion: result.difintion, details: result.details, examples: result.examples })
-    // })
+    const result = await docsapi.getKeyword({ keyword: "href", language: "html", keywordkind: "attribute" }, "listTagsFromAttribute");
 
 
     // Adds support for GET requests to our webhook
     app.get('/webhook', (req, res) => {
-    
+
         // Your verify token. Should be a random string.
         let VERIFY_TOKEN = "secret"
-        
+
         // Parse the query params
         let mode = req.query['hub.mode'];
         let token = req.query['hub.verify_token'];
         let challenge = req.query['hub.challenge'];
-        
+
         // Checks if a token and mode is in the query string of the request
         if (mode && token) {
-        
+
             // Checks the mode and token sent is correct
             if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-                
+
                 // Responds with the challenge token from the request
                 console.log('WEBHOOK_VERIFIED');
                 res.status(200).send(challenge);
-            
+
             } else {
                 // Responds with '403 Forbidden' if verify tokens do not match
-                res.sendStatus(403);      
+                res.sendStatus(403);
             }
         }
     });
-    
+
     // Creates the endpoint for our webhook
-    app.post('/webhook', (req, res) => {  
-    
+    app.post('/webhook', (req, res) => {
+
         // Parse the request body from the POST
         let body = req.body;
-        
+
         // Check the webhook event is from a Page subscription
         if (body.object === 'page') {
-    
+
             // Iterate over each entry - there may be multiple if batched
             for (var i in body.entry) {
                 // Gets the body of the webhook event
                 let webhook_event = body.entry[i].messaging[0];
                 console.log(webhook_event);
-            
-            
+
+
                 // Get the sender PSID
                 let sender_psid = webhook_event.sender.id;
                 console.log('Sender PSID: ' + sender_psid);
-            
+
                 // Check if the event is a message or postback and
                 // pass the event to the appropriate handler function
                 if (webhook_event.message) {
-                    handleMessage(sender_psid, webhook_event.message);        
+                    handleMessage(sender_psid, webhook_event.message);
                 } else if (webhook_event.postback) {
                     handlePostback(sender_psid, webhook_event.postback);
                 }
             }
-    
+
             // Return a '200 OK' response to all events
             res.status(200).send('EVENT_RECEIVED');
-    
+
         } else {
             // Return a '404 Not Found' if event is not from a page subscription
             res.sendStatus(404);
         }
-    
+
     });
 
 
     async function handleMessage(sender_psid, received_message) {
 
         if (received_message.quick_reply) {
-        
+
             let payload = JSON.parse(received_message.quick_reply.payload);
-            
+
             if (payload.action == "queryAttributeFromTag") {
 
                 await typeOn(sender_psid);
-                
+
                 await queryAttributeFromTag(sender_psid, payload.keyword, payload.attribute);
-                
+
                 await typeOff(sender_psid);
-                
+
             } else if (payload.action == "listAttributeFromTag") {
-                
+
                 await typeOn(sender_psid);
-                
+
                 listAttributeFromTag(sender_psid, payload.keyword, payload.startAt)
 
                 await typeOff(sender_psid);
-                
-                
+
+
             } else if (payload.action == "queryExampleFromTag") {
-                
+
                 await typeOn(sender_psid);
 
                 await queryExampleFromTag(sender_psid, payload.keyword, payload.example);
-                
+
                 await typeOff(sender_psid);
 
             } else if (payload.action == "listExampleFromTag") {
-                
+
                 await typeOn(sender_psid);
 
                 listExampleFromTag(sender_psid, payload.keyword, payload.startAt)
-                
-                await typeOff(sender_psid);                    
-                
+
+                await typeOff(sender_psid);
+
             } else if (payload.action == "listTagsFromAttribute") {
-                
+
                 await typeOn(sender_psid);
-                
-                const result = await DB.keywordDB.getKeyword({ keyword: payload.keyword, language: payload.language, keywordkind: "attribute"  });
-                                                
+
+                const result = await docsapi.getKeyword({ keyword: payload.keyword, language: payload.language, keywordkind: "attribute" }, "listTagsFromAttribute");
+
                 if (result.tags.length - payload.startAt <= 11) {
-    
+
                     let response = {
                         "text": "Choose tag You want",
                         "quick_replies": []
                     }
-    
+
                     for (var i = payload.startAt; i < result.tags.length; i++) {
 
                         response.quick_replies.push({
@@ -184,15 +156,15 @@ const start = async () => {
                             })
                         });
                     }
-    
-                    await callSendMessageAPI(sender_psid, response); 
-                    
+
+                    await callSendMessageAPI(sender_psid, response);
+
                 } else if (result.examples.length - payload.startAt > 11) {
                     let response = {
                         "text": "Choose example You want",
                         "quick_replies": []
                     }
-    
+
                     for (var i = payload.startAt; i < payload.startAt + 10; i++) {
                         response.quick_replies.push({
                             "content_type": "text",
@@ -205,7 +177,7 @@ const start = async () => {
                             })
                         });
                     }
-    
+
                     response.quick_replies.push({
                         "content_type": "text",
                         "title": "more",
@@ -216,23 +188,23 @@ const start = async () => {
                             startAt: payload.startAt+10,
                         })
                     });
-    
-    
-                    await callSendMessageAPI(sender_psid, response); 
+
+
+                    await callSendMessageAPI(sender_psid, response);
                 }
             }
 
-            
+
         }
             // Checks if the message contains text
         else if (received_message.text) {
-            
+
             // Create the payload for a basic text message, which
             // will be added to the body of our request to the Send API
             var apiaiRequest = apiaiClient.textRequest(received_message.text, {
                 sessionId: sender_psid,
             });
-    
+
             apiaiRequest.on('response', async function(response) {
 
                 if (response.result.action == "querySyntax"){
@@ -240,7 +212,7 @@ const start = async () => {
 
                     await typeOn(sender_psid);
 
-                    const result = await DB.keywordDB.getKeyword(response.result.parameters);
+                    const result = await docsapi.getKeyword(response.result.parameters, "querySyntax");
 
 
                     if (response.result.parameters.keywordkind == "tag") {
@@ -281,16 +253,16 @@ const start = async () => {
                             }
                         }
 
-                        await callSendMessageAPI(sender_psid, response);                        
+                        await callSendMessageAPI(sender_psid, response);
 
                     } else {
 
                         if (result.tags.length == 1) {
-                            
-                            const resultattr = await DB.keywordDB.getKeyword({keyword: result.tags[0], language: response.result.parameters.language, keywordkind: "tag" });
-                            
+
+                            const resultattr = await docsapi.getKeyword({keyword: result.tags[0], language: response.result.parameters.language, keywordkind: "tag" }, "listAttributeFromTag");
+
                             var re = "";
-                            
+
                             for (var i = 0; i < resultattr.attributes.length; i++) {
                                 console.log(resultattr.attributes[i].name)
                                 if(resultattr.attributes[i].name == response.result.parameters.keyword) {
@@ -298,25 +270,25 @@ const start = async () => {
                                     break;
                                 }
                             }
-                            
+
                             console.log("re:  " + re);
 
                             re = re.split("\n");
-            
+
                             for (var i in re) {
                                 if (re[i].length > 1) {
                                     await sendText(sender_psid, re[i]);
                                 }
                             }
-                         
-                        
+
+
                         } else if (result.tags.length <= 11) {
-            
+
                             let ourresponse = {
                                 "text": "Choose tag You want",
                                 "quick_replies": []
                             }
-            
+
                             for (var i = 0; i < result.tags.length; i++) {
                                 ourresponse.quick_replies.push({
                                     "content_type": "text",
@@ -329,15 +301,15 @@ const start = async () => {
                                     })
                                 });
                             }
-                                       
+
                            await callSendMessageAPI(sender_psid, ourresponse);
-                           
+
                         } else if (result.tags.length > 11) {
                             let ourresponse = {
                                 "text": "Choose tag You want",
                                 "quick_replies": []
                             }
-            
+
                             for (var i = 0; i < 10; i++) {
                                 ourresponse.quick_replies.push({
                                     "content_type": "text",
@@ -350,7 +322,7 @@ const start = async () => {
                                     })
                                 });
                             }
-            
+
                             ourresponse.quick_replies.push({
                                 "content_type": "text",
                                 "title": "more",
@@ -361,11 +333,11 @@ const start = async () => {
                                     startAt: 10,
                                 })
                             });
-            
+
                            await callSendMessageAPI(sender_psid, ourresponse);
-                    
+
                         }
-            
+
                     }
 
                     // Send the response message
@@ -375,14 +347,14 @@ const start = async () => {
                     await sendText(sender_psid, response.result.fulfillment.speech);
                 }
             });
-    
+
             apiaiRequest.on('error', function(error) {
                 console.log(error);
             });
-             
+
             apiaiRequest.end();
-    
-            
+
+
         } else if (received_message.attachments) {
             // Get the URL of the message attachment
             let attachment_url = received_message.attachments[0].payload.url;
@@ -417,18 +389,18 @@ const start = async () => {
                     }
                 }
             }
-    
+
             // Send the response message
             await callSendMessageAPI(sender_psid, response);
-        }    
+        }
     }
-    
-    
+
+
     async function handlePostback(sender_psid, received_postback) {
-            
+
         // Get the payload for the postback
         let payload = JSON.parse(received_postback.payload);
-    
+
         // Set the response based on the postback payload
         if (payload.action == 'getstarted') {
 
@@ -439,9 +411,9 @@ const start = async () => {
                 json: true,
             })
 
-            await DB.userDB.adduser(sender_psid, body.first_name);                    
+            await DB.userDB.adduser(sender_psid, body.first_name);
             await sendText(sender_psid, "Welcome " + body.first_name + "\u000AI'am CodingBot, And I'am here To help you in coding\u000ACurrntly I we only support HTML/CSS But We will support more languages in the future");
-        
+
         } else if (payload === 'yes') {
             await sendText(sender_psid, "Thanks!");
         } else if (payload === 'no') {
@@ -449,7 +421,7 @@ const start = async () => {
         } else if (payload.action == 'listAttributeFromTag') {
 
             await typeOn(sender_psid);
-            
+
             await listAttributeFromTag(sender_psid, payload.keyword, 0);
 
             await typeOff(sender_psid);
@@ -457,38 +429,38 @@ const start = async () => {
         }  else if (payload.action == 'listExampleFromTag') {
 
             await typeOn(sender_psid);
-            
+
             listExampleFromTag(sender_psid, payload.keyword, 0)
-            
-            await typeOff(sender_psid); 
+
+            await typeOff(sender_psid);
 
         }
     }
-    
+
 
     async function typeOn(sender_psid) {
-        
+
         let request_body = {
             "recipient": {
                 "id": sender_psid
             },
             "sender_action":"typing_on"
         }
-    
+
         await callSendAPI(request_body, sender_psid);
     }
-    
+
     async function typeOff(sender_psid) {
-        
+
         let request_body = {
             "recipient": {
                 "id": sender_psid
             },
             "sender_action":"typing_off"
         }
-    
+
         await callSendAPI(request_body, sender_psid);
-    
+
     }
 
 
@@ -500,7 +472,7 @@ const start = async () => {
             },
             "message": response
         }
-    
+
         await callSendAPI(request_body, sender_psid);
     }
 
@@ -516,24 +488,24 @@ const start = async () => {
 
         console.log('message sent!');
     }
-    
+
     async function sendText(sender_psid, text) {
-    
+
         const response = {
             text,
         }
-    
+
         // Send the response message
         await callSendMessageAPI(sender_psid, response);
     }
-    
+
 
 
     async function queryAttributeFromTag(sender_psid, tag, attribute) {
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
-        
+        const result = await docsapi.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" }, "listAttributeFromTag");
+
         var re = "";
-        
+
         for (var i = 0; i < result.attributes.length; i++) {
             console.log(result.attributes[i].name)
             if(result.attributes[i].name == attribute) {
@@ -541,23 +513,23 @@ const start = async () => {
                 break;
             }
         }
-        
+
         re = re.split("\n");
 
         for (var i in re) {
             if (re[i].length > 1) {
                 await sendText(sender_psid, re[i]);
             }
-        }    
-    
+        }
+
     }
 
     async function listAttributeFromTag(sender_psid, tag, startAt) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
-        
+        const result = await docsapi.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" }, "listAttributeFromTag");
+
         if (startAt == 0 && result.attributes.length == 0) {
-            await sendText(sender_psid, "It have only the global attributes");            
+            await sendText(sender_psid, "It have only the global attributes");
         } else if (result.attributes.length - startAt <= 11) {
 
             let response = {
@@ -566,12 +538,12 @@ const start = async () => {
             }
 
 
-            
+
 
 
             for (var i = startAt; i < result.attributes.length; i++) {
                 var img = null;
-                
+
                 if (result.attributes[i].status == "obsolete"){
                     img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
                 } else if (result.attributes[i].status == "html5") {
@@ -579,9 +551,9 @@ const start = async () => {
                 } else if (result.attributes[i].status == "deprecated") {
                     img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
                 } else if (result.attributes[i].status == "not standardized") {
-                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
                 } else if (result.attributes[i].status == "experimental") {
-                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";
                 }
 
 
@@ -598,8 +570,8 @@ const start = async () => {
                 });
             }
 
-            await callSendMessageAPI(sender_psid, response); 
-            
+            await callSendMessageAPI(sender_psid, response);
+
         } else if (result.attributes.length - startAt > 11) {
             let response = {
                 "text": "Choose Attribute You want",
@@ -609,7 +581,7 @@ const start = async () => {
             for (var i = startAt; i < startAt + 10; i++) {
 
                 var img = null;
-                
+
                 if (result.attributes[i].status == "obsolete"){
                     img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
                 } else if (result.attributes[i].status == "html5") {
@@ -617,9 +589,9 @@ const start = async () => {
                 } else if (result.attributes[i].status == "deprecated") {
                     img = "http://www.cureffi.org/wp-content/uploads/2013/09/deprecated.png";
                 } else if (result.attributes[i].status == "not standardized") {
-                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";                            
+                    img = "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png";
                 } else if (result.attributes[i].status == "experimental") {
-                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";                            
+                    img = "https://www.nesta.org.uk/sites/default/files/styles/large/public/lab-flask-ts-rf-400px_2.jpg?itok=iRmRcl8y";
                 }
 
 
@@ -648,22 +620,22 @@ const start = async () => {
             });
 
 
-            await callSendMessageAPI(sender_psid, response); 
+            await callSendMessageAPI(sender_psid, response);
         }
-        
+
     }
 
 
     async function listExampleFromTag(sender_psid, tag, startAt) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
+        const result = await docsapi.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" }, "listExampleFromTag");
 
         if (startAt == 0 && result.examples.length == 0) {
             await sendText(sender_psid, "It have no example");
         } else if (startAt == 0 && result.examples.length == 1) {
-                                        
+
             var re = result.examples[0];
-            
+
             if (re.detail) {
                 var response = re.detail.split("\n");
                 for (var i in response) {
@@ -711,8 +683,8 @@ const start = async () => {
                         await sendText(sender_psid, response[i]);
                     }
                 }
-            }            
-        
+            }
+
         } else if (result.examples.length - startAt <= 11) {
 
             let response = {
@@ -733,8 +705,8 @@ const start = async () => {
                 });
             }
 
-            await callSendMessageAPI(sender_psid, response); 
-        
+            await callSendMessageAPI(sender_psid, response);
+
         } else if (result.examples.length - startAt > 11) {
             let response = {
                 "text": "Choose example You want",
@@ -766,7 +738,7 @@ const start = async () => {
             });
 
 
-            await callSendMessageAPI(sender_psid, response); 
+            await callSendMessageAPI(sender_psid, response);
         }
 
 
@@ -775,10 +747,10 @@ const start = async () => {
 
     async function queryExampleFromTag(sender_psid, tag, example) {
 
-        const result = await DB.keywordDB.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" });
-                
+        const result = await docsapi.getKeyword({ keyword: tag, language: "html", keywordkind: "tag" }, "listExampleFromTag");
+
         var re;
-        
+
         for (var i = 0; i < result.examples.length; i++) {
             if(result.examples[i].title == example) {
                 re = result.examples[i]
@@ -836,7 +808,7 @@ const start = async () => {
         }
     }
 
-    const PORT = process.argv[2] || 5000;
+    const PORT = process.argv[2] || 5050;
     app.listen(PORT, () => {
         console.log(`CodingBot server running on port ${PORT}.`)
     });
